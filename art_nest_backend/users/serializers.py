@@ -15,3 +15,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
             'password': {'write_only': True},
              }
+        
+        
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        person = CustomUser(**validated_data)
+        person.set_password(password)
+        person.save()
+        
+        return person
