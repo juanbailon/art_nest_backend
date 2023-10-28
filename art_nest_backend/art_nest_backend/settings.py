@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if DEBUG:
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'django_filters',
 
     'users',
@@ -84,6 +85,11 @@ REST_FRAMEWORK = {
 
         'django_filters.rest_framework.DjangoFilterBackend',
     ), 
+
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
 }
 
 
@@ -91,9 +97,9 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
-    "UPDATE_LAST_LOGIN": False,
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
 
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY if DEBUG else os.getenv('SIMPLE_JWT_SINGNING_KEY'),
@@ -163,6 +169,9 @@ available_databases = {
                 'PASSWORD': os.getenv('LOCAL_DB_PASSWORD'),
                 'HOST': os.getenv('LOCAL_DB_HOST', 'localhost'),
                 'PORT': os.getenv('LOCAL_DB_PORT', '5432'),
+                'TEST': {
+                    'ENGINE': 'django.db.backends.sqlite3',
+                },
             },
 
     'production': {
