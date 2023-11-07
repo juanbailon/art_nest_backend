@@ -71,3 +71,13 @@ class PasswordUpdateSerializer(serializers.Serializer):
 
 
         return data
+    
+
+class SearchUsernameSerializer(serializers.ModelSerializer):    
+    
+    class Meta:
+        model = CustomUser
+        fields = [
+                  'username'
+                 ]
+                

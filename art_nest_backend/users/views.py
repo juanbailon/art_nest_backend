@@ -2,10 +2,11 @@ from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from rest_framework.request import Request
 from rest_framework.response import Response
-from .serializers import CustomUserSerializer, UpdateCustomUserSerializer, PasswordUpdateSerializer
+from .serializers import CustomUserSerializer, UpdateCustomUserSerializer, PasswordUpdateSerializer, SearchUsernameSerializer
 from .models import CustomUser
 from rest_framework_simplejwt.views import TokenRefreshView
 from .permissions import IsProfileOwnerPermission
+from .filters import UsernameFilter, filters
 
 
 # Create your views here.
@@ -54,3 +55,10 @@ class UpdateUserPasswordView(generics.UpdateAPIView):
         user.save()
 
         return Response("Password updated successfully", status=status.HTTP_200_OK)
+    
+
+class SearchUserByUsernameView(generics.ListAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = SearchUsernameSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filterset_class = UsernameFilter
