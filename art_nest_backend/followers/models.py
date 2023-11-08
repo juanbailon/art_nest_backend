@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 from users.models import CustomUser
 
 # Create your models here.
@@ -26,3 +27,8 @@ class Follow(models.Model):
     follower = models.ForeignKey(CustomUser, related_name='followed_users', null=False, blank=False, on_delete=models.CASCADE)
     followed = models.ForeignKey(CustomUser, related_name='follower_users', null=False, blank=False, on_delete=models.CASCADE)
 
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['follower', 'followed'], name='unique_follow_pair')
+        ]
