@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import UniqueConstraint
+from django.db.models import UniqueConstraint, CheckConstraint, Q, F
 from users.models import CustomUser
 
 # Create your models here.
@@ -30,5 +30,6 @@ class Follow(models.Model):
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=['follower', 'followed'], name='unique_follow_pair')
+            UniqueConstraint(fields=['follower', 'followed'], name='unique_follow_pair'),
+            CheckConstraint(check= ~Q(follower=F('followed')), name='could_not_follow_itself')
         ]
