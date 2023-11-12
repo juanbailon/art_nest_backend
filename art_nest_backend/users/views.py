@@ -58,6 +58,20 @@ class UpdateUserPasswordView(generics.UpdateAPIView):
     
 
 class SearchUserByUsernameView(generics.ListAPIView):
+    """
+    API view for searching users by username.
+
+    Requires authentication.
+
+    Query Parameters:
+    - `username` (string): Search for users whose username contains the specified string.
+
+    Returns a list of users matching the search criteria.
+
+    Example usage:
+    - Search users by username: GET /search-username/?username=johndoe
+    """
+
     queryset = CustomUser.objects.all()
     serializer_class = SearchUsernameSerializer
     permission_classes = [permissions.IsAuthenticated]
