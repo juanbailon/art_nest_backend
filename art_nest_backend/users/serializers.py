@@ -1,4 +1,6 @@
+from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import CustomUser
 
@@ -20,10 +22,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         
     def create(self, validated_data):
         password = validated_data.pop('password')
-        person = CustomUser(**validated_data)
-        person.set_password(password)
-        person.save()
-        
+
+        try:
+            person = CustomUser.objects.create_user(password=password, **validated_data)
+        except ValidationError as e:
+            raise serializers.ValidationError({'password': e.messages})
+
         return person
     
 
@@ -55,6 +59,7 @@ class PasswordUpdateSerializer(serializers.Serializer):
         Custom validation to ensure current_password matches the users DB password
         and new_password is confirmed correctly.
         """
+
         current_password = data.get('current_password')
         new_password = data.get('new_password')
         confirm_new_password = data.get('confirm_new_password')
@@ -68,6 +73,12 @@ class PasswordUpdateSerializer(serializers.Serializer):
         user = self.context['request'].user  # Assuming the user is already authenticated
         if not check_password(current_password, user.password):
             raise serializers.ValidationError("Current password is incorrect.")
+        
+
+        try:
+            validate_password(new_password, user)
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError({'new_password': e.messages})
 
 
         return data
