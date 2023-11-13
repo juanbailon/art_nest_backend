@@ -1,15 +1,19 @@
 from django.core import validators
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password, **extra_fields):
         # Create and save a new user with the given email and password
+        validate_password(password)
+        
         user = self.model(username= username, email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
-        user.save(using=self._db)   
+        user.save()   
         
         return user
 
