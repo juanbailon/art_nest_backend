@@ -199,16 +199,31 @@ else:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {
+            "min_length": 9,
+        },
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+    {
+        "NAME": "art_nest_backend.custom_password_validators.MinimumAmountOfNumericDigitsValidator",
+        "OPTIONS": {
+            "min_amount_num_digits": 1,
+        },
+    },
+    {
+        "NAME": "art_nest_backend.custom_password_validators.MinimumAmountOfSpecialCharactersValidator",
+        "OPTIONS": {
+            "min_amount": 1,
+        },
     },
 ]
 
