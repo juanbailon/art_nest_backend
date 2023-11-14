@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('follow/', include('followers.urls')),
+    path('auth/', include('authentication_and_access_management.urls')),
 ]
