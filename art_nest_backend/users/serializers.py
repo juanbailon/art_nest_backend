@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
@@ -92,3 +92,19 @@ class SearchUsernameSerializer(serializers.ModelSerializer):
                   'username'
                  ]
                 
+
+class ForgotPasswordEmailSerializer(serializers.Serializer):
+
+    email = serializers.EmailField()
+
+
+    def validate(self, data):
+
+        email = data['email']
+        try:
+            user = CustomUser.objects.get(email= email)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError(f'The emial {email} is NOT associated to any user')
+        
+
+        return data
