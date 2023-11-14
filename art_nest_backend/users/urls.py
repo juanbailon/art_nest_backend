@@ -10,6 +10,7 @@ urlpatterns = [
     path('<int:pk>', views.RetriveAndUpdateCustomUserView.as_view(), name='retrive_and_update_user_own_info'),
     path('<int:pk>/change-password', views.UpdateUserPasswordView.as_view(), name='change_user_password'),
     path('search', views.SearchUserByUsernameView.as_view(), name='search_users_by_their_usernames'),
+    path('forgot-password/send/email', views.SendForgotPasswordEmailView.as_view(), name='send_forgot_password_email'),
 ]
 
 
