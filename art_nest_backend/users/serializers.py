@@ -92,19 +92,3 @@ class SearchUsernameSerializer(serializers.ModelSerializer):
                   'username'
                  ]
                 
-
-class ForgotPasswordEmailSerializer(serializers.Serializer):
-
-    email = serializers.EmailField()
-
-
-    def validate(self, data):
-
-        email = data['email']
-        try:
-            user = CustomUser.objects.get(email= email)
-        except ObjectDoesNotExist:
-            raise serializers.ValidationError(f'The emial {email} is NOT associated to any user')
-        
-
-        return data
