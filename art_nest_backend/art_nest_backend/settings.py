@@ -257,6 +257,11 @@ CORS_ALLOW_ALL_ORIGINS = True
 AUTH_USER_MODEL = 'users.CustomUser'
 
 
+# Password reset email OTP settings
+PASSWORD_RESET_EMAIL_OTP_LIFETIME = timedelta(minutes=30)
+MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION = 4
+
+
 # Celery settings
 CELERY_BROKER_URL = "redis://localhost:6379"
 CELERY_RESULT_BACKEND = "redis://localhost:6379"
