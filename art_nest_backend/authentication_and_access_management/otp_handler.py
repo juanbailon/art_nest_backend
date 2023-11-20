@@ -57,9 +57,9 @@ class FailedOTPAttemptsMixin:
 class PasswordResetOTPManager(OTPBlacklistMixin, FailedOTPAttemptsMixin):
 
     def __init__(self,
-                 otp_length:int,
-                 charset:str,
-                 lifetime:timedelta,
+                 otp_length:int = settings.OTP_CODE_LENGTH,
+                 charset:str = OTPCharacterSet.NUMBERS.value,
+                 lifetime:timedelta = settings.PASSWORD_RESET_EMAIL_OTP_LIFETIME,
                  ) -> None:
         
         self.length = otp_length
@@ -79,7 +79,7 @@ class PasswordResetOTPManager(OTPBlacklistMixin, FailedOTPAttemptsMixin):
         
         otp = self.generate_OTP_code(otp_length= self.length, charset= self.charset)
         created_at = timezone.now()
-        expires_at = created_at + settings.PASSWORD_RESET_EMAIL_OTP_LIFETIME
+        expires_at = created_at + self.lifetime
 
         password_reset_otp_obj = PasswordResetOTP.objects.create(OTP= otp,
                                         created_at= created_at,
