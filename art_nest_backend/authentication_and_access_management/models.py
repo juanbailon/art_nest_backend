@@ -5,9 +5,9 @@ from users.models import CustomUser
 class PasswordResetOTP(models.Model):
 
     OTP = models.CharField(max_length=10, unique=True, blank=False, null=False)
-    created_at = models.DateTimeField(auto_now_add=True, null=False)
+    created_at = models.DateTimeField(null=False, blank=True)
     expires_at = models.DateTimeField(null=False, blank=True)
-    user_id =  models.ForeignKey(CustomUser, null=False, blank=False, on_delete=models.CASCADE)
+    user =  models.ForeignKey(CustomUser, null=False, blank=False, on_delete=models.CASCADE)
 
 
 class BlacklistedPasswordResetOTP(models.Model):
