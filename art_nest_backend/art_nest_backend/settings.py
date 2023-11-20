@@ -260,6 +260,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 # Password reset email OTP settings
 PASSWORD_RESET_EMAIL_OTP_LIFETIME = timedelta(minutes=30)
 MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION = 4
+OTP_CODE_LENGTH = 6
 
 
 # Celery settings
