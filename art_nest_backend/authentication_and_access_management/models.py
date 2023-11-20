@@ -20,4 +20,4 @@ class FailedPasswordResetOTPAttemps(models.Model):
 
     OTP = models.OneToOneField(PasswordResetOTP, on_delete=models.CASCADE)
     failed_attempts = models.PositiveIntegerField(default=0, null=False, blank=False)
-    last_failed_attempt = models.DateTimeField(auto_now_add=True, null=False)
+    last_failed_attempt = models.DateTimeField(auto_now=True, null=False)
