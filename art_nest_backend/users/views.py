@@ -7,14 +7,12 @@ from .serializers import (
     CustomUserSerializer, 
     UpdateCustomUserSerializer,
     PasswordUpdateSerializer, 
-    SearchUsernameSerializer, 
-    ForgotPasswordEmailSerializer
+    SearchUsernameSerializer,
     )
 from .models import CustomUser
 from rest_framework_simplejwt.views import TokenRefreshView
 from .permissions import IsProfileOwnerPermission
 from .filters import UsernameFilter
-from authentication_and_access_management.tasks import send_forgot_password_email_task
 
 
 # Create your views here.
