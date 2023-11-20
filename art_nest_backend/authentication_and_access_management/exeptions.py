@@ -1,0 +1,3 @@
+
+class PasswordResetOTPError(Exception):
+    pass
