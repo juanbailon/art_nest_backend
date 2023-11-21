@@ -3,6 +3,7 @@ from datetime import timedelta
 from enum import Enum
 from django.conf import settings
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from users.models import CustomUser
 from .models import BlacklistedPasswordResetOTP, FailedPasswordResetOTPAttempts, PasswordResetOTP
 from .exeptions import PasswordResetOTPError
@@ -90,6 +91,30 @@ class PasswordResetOTPManager(OTPBlacklistManager, FailedOTPAttemptsManager):
                                         )
         
         return password_reset_otp_obj
+    
+
+    @staticmethod 
+    def get_OTP_by_user_email(email: str) -> PasswordResetOTP | None:
+        
+        try:
+            user = CustomUser.objects.get(email= email) 
+            otp_obj = PasswordResetOTP(user= user)
+
+        except ObjectDoesNotExist:
+            return None
+        
+        return otp_obj
+    
+    
+    @staticmethod
+    def get_OTP_by_user(user: CustomUser) -> PasswordResetOTP | None:
+
+        try:
+            otp_obj = PasswordResetOTP(user= user)
+        except ObjectDoesNotExist:
+            return None
+        
+        return otp_obj
 
 
         
