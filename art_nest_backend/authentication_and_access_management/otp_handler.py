@@ -1,5 +1,4 @@
 import secrets
-from typing import Optional
 from datetime import timedelta
 from enum import Enum
 from django.conf import settings
@@ -16,8 +15,9 @@ class OTPCharacterSet(Enum):
     ASCII_CHARS = "".join(chr(i) for i in range(33, 127) )
 
 
-class OTPBlacklistMixin:
+class OTPBlacklistManager:
     
+    @staticmethod
     def check_blacklist(self, otp_code: str) -> None:
         """
         Checks if this OTP code is present in the OTP blacklist.  Raises
@@ -28,14 +28,16 @@ class OTPBlacklistMixin:
             raise PasswordResetOTPError("This OTP code is blacklisted")
         
 
+    @staticmethod
     def blacklist(self, OTP: PasswordResetOTP) -> BlacklistedPasswordResetOTP:
          
         blacklist_otp_obj, created = BlacklistedPasswordResetOTP.objects.get_or_create(OTP= OTP)
         return blacklist_otp_obj
 
 
-class FailedOTPAttemptsMixin:
+class FailedOTPAttemptsManager:
 
+    @staticmethod
     def record_failed_attempt(self, otp_instance: PasswordResetOTP) -> None:
         """
         Records a failed OTP attempt and raises an exception if the maximum
@@ -54,7 +56,7 @@ class FailedOTPAttemptsMixin:
 
          
             
-class PasswordResetOTPManager(OTPBlacklistMixin, FailedOTPAttemptsMixin):
+class PasswordResetOTPManager(OTPBlacklistManager, FailedOTPAttemptsManager):
 
     def __init__(self,
                  otp_length:int = settings.OTP_CODE_LENGTH,
