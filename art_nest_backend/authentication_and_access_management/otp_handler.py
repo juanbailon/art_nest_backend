@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from users.models import CustomUser
 from .models import BlacklistedPasswordResetOTP, FailedPasswordResetOTPAttempts, PasswordResetOTP
-from .exeptions import PasswordResetOTPError
+from .exeptions import BlacklistedOTPError, MaxFailedAttemptsOTPError
 
 
 class OTPCharacterSet(Enum):
@@ -26,7 +26,7 @@ class OTPBlacklistManager:
         """
 
         if BlacklistedPasswordResetOTP.objects.filter(OTP__OTP=otp_code).exists():
-            raise PasswordResetOTPError("This OTP code is blacklisted")
+            raise BlacklistedOTPError(f"This OTP code {otp_code} is blacklisted")
         
 
     @staticmethod
@@ -49,7 +49,7 @@ class FailedOTPAttemptsManager:
         )
 
         if failed_attempts_obj.failed_attempts >= settings.MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION:
-            raise PasswordResetOTPError("Maximum number of failed OTP validation attempts exceeded")
+            raise MaxFailedAttemptsOTPError("Maximum number of failed OTP validation attempts exceeded")
         
         if not created:
             failed_attempts_obj.failed_attempts += 1
@@ -105,7 +105,7 @@ class PasswordResetOTPManager(OTPBlacklistManager, FailedOTPAttemptsManager):
         
         return otp_obj
     
-    
+
     @staticmethod
     def get_OTP_by_user(user: CustomUser) -> PasswordResetOTP | None:
 
