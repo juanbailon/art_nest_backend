@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from users.models import CustomUser
 from .models import BlacklistedPasswordResetOTP, FailedPasswordResetOTPAttempts, PasswordResetOTP
-from .exeptions import BlacklistedOTPError, MaxFailedAttemptsOTPError
+from .exeptions import  BlacklistedOTPError, MaxFailedAttemptsOTPError
 
 
 class OTPCharacterSet(Enum):
@@ -19,18 +19,18 @@ class OTPCharacterSet(Enum):
 class OTPBlacklistManager:
     
     @staticmethod
-    def check_blacklist(self, otp_code: str) -> None:
+    def check_blacklist(otp_instance: PasswordResetOTP) -> None:
         """
         Checks if this OTP code is present in the OTP blacklist.  Raises
         `PasswordResetOTPError` if so.
         """
 
-        if BlacklistedPasswordResetOTP.objects.filter(OTP__OTP=otp_code).exists():
-            raise BlacklistedOTPError(f"This OTP code {otp_code} is blacklisted")
+        if BlacklistedPasswordResetOTP.objects.filter(OTP=otp_instance).exists():
+            raise BlacklistedOTPError(f"This OTP code {otp_instance.OTP} is blacklisted")
         
 
     @staticmethod
-    def blacklist(self, OTP: PasswordResetOTP) -> BlacklistedPasswordResetOTP:
+    def blacklist(OTP: PasswordResetOTP) -> BlacklistedPasswordResetOTP:
          
         blacklist_otp_obj, created = BlacklistedPasswordResetOTP.objects.get_or_create(OTP= OTP)
         return blacklist_otp_obj
@@ -39,7 +39,7 @@ class OTPBlacklistManager:
 class FailedOTPAttemptsManager:
 
     @staticmethod
-    def record_failed_attempt(self, otp_instance: PasswordResetOTP) -> None:
+    def record_failed_attempt(otp_instance: PasswordResetOTP) -> None:
         """
         Records a failed OTP attempt and raises an exception if the maximum
         allowed attempts are exceeded.
@@ -55,6 +55,23 @@ class FailedOTPAttemptsManager:
             failed_attempts_obj.failed_attempts += 1
             failed_attempts_obj.save()
 
+
+    @staticmethod
+    def check_max_failed_attempts(otp_instance: PasswordResetOTP) -> None:
+
+        try:
+            failed_attempts_obj= FailedPasswordResetOTPAttempts.objects.get(
+                OTP=otp_instance
+            )
+        except ObjectDoesNotExist:
+            """
+            here we return None because if the instance DOES NOT exist this
+            means that the user has never input his OTP code wrong for a validation
+            """
+            return None
+        
+        if failed_attempts_obj.failed_attempts >= settings.MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION:
+            raise MaxFailedAttemptsOTPError("Maximum number of failed OTP validation attempts exceeded")
          
             
 class PasswordResetOTPManager(OTPBlacklistManager, FailedOTPAttemptsManager):
