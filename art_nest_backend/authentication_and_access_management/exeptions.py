@@ -7,3 +7,6 @@ class BlacklistedOTPError(PasswordResetOTPError):
 
 class MaxFailedAttemptsOTPError(PasswordResetOTPError):
     pass
+
+class ExpiredOTPError(PasswordResetOTPError):
+    pass
