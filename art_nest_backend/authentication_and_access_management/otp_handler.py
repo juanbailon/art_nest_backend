@@ -1,12 +1,13 @@
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 from django.conf import settings
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import QuerySet
 from users.models import CustomUser
 from .models import BlacklistedPasswordResetOTP, FailedPasswordResetOTPAttempts, PasswordResetOTP
-from .exeptions import  BlacklistedOTPError, MaxFailedAttemptsOTPError
+from .exeptions import  BlacklistedOTPError, MaxFailedAttemptsOTPError, ExpiredOTPError
 
 
 class OTPCharacterSet(Enum):
@@ -39,21 +40,33 @@ class OTPBlacklistManager:
 class FailedOTPAttemptsManager:
 
     @staticmethod
-    def record_failed_attempt(otp_instance: PasswordResetOTP) -> None:
+    def record_failed_attempt(otp_instance: PasswordResetOTP) -> FailedPasswordResetOTPAttempts:
         """
         Records a failed OTP attempt and raises an exception if the maximum
         allowed attempts are exceeded.
         """
+        max_allowed_failed_attempts = settings.MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION
+        
         failed_attempts_obj, created = FailedPasswordResetOTPAttempts.objects.get_or_create(
             OTP=otp_instance
         )
-
-        if failed_attempts_obj.failed_attempts >= settings.MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION:
-            raise MaxFailedAttemptsOTPError("Maximum number of failed OTP validation attempts exceeded")
         
-        if not created:
-            failed_attempts_obj.failed_attempts += 1
-            failed_attempts_obj.save()
+        if failed_attempts_obj.failed_attempts >= max_allowed_failed_attempts:
+            
+            raise MaxFailedAttemptsOTPError("Maximum number of failed OTP validation attempts exceeded")
+                
+        failed_attempts_obj.failed_attempts += 1
+        failed_attempts_obj.save()
+        
+        if created:
+            return failed_attempts_obj
+        
+        if failed_attempts_obj.failed_attempts >= max_allowed_failed_attempts:
+            
+            OTPBlacklistManager.blacklist(otp_instance)
+            raise MaxFailedAttemptsOTPError("Max validation attempts exceeded. OTP was balcklisted ")
+        
+        return failed_attempts_obj
 
 
     @staticmethod
@@ -95,9 +108,20 @@ class PasswordResetOTPManager(OTPBlacklistManager, FailedOTPAttemptsManager):
         return ''.join(secrets.choice(charset) for _ in range(otp_length))
     
 
+    def _generate_valid_OTP_code(self, user: CustomUser, max_iterations: int) -> str | None:
+
+        for _ in range(max_iterations):
+            otp_code = self.generate_OTP_code(otp_length= self.length, charset= self.charset)
+            flag = self.is_valid_OTP_candidate(otp_code= otp_code, user= user)
+
+            if flag:
+                return otp_code
+
+    
     def record_OTP(self, user: CustomUser) -> PasswordResetOTP:
         
-        otp = self.generate_OTP_code(otp_length= self.length, charset= self.charset)
+        otp = self._generate_valid_OTP_code(user= user, max_iterations=5)
+
         created_at = timezone.now()
         expires_at = created_at + self.lifetime
 
@@ -110,28 +134,54 @@ class PasswordResetOTPManager(OTPBlacklistManager, FailedOTPAttemptsManager):
         return password_reset_otp_obj
     
 
-    @staticmethod 
-    def get_OTP_by_user_email(email: str) -> PasswordResetOTP | None:
+    def is_valid_OTP_candidate(self,
+                               otp_code: str,
+                            #    created_at: datetime,
+                            #    exprires_at: datetime,
+                               user: CustomUser
+                               ) -> bool:
         
-        try:
-            user = CustomUser.objects.get(email= email) 
-            otp_obj = PasswordResetOTP(user= user)
+        my_query = PasswordResetOTP.objects.filter(user= user, OTP= otp_code)
 
-        except ObjectDoesNotExist:
-            return None
-        
-        return otp_obj
+        return not my_query.exists()
     
 
     @staticmethod
-    def get_OTP_by_user(user: CustomUser) -> PasswordResetOTP | None:
+    def is_OTP_expired(otp_instance: PasswordResetOTP) -> bool:
+        current_time = timezone.now()
+        expires_at = otp_instance.expires_at
 
-        try:
-            otp_obj = PasswordResetOTP(user= user)
-        except ObjectDoesNotExist:
-            return None
+        return current_time > expires_at
+    
+
+    @staticmethod
+    def check_expiration_date(otp_instance: PasswordResetOTP) -> None:
+        flag = PasswordResetOTPManager.is_OTP_expired(otp_instance)
+
+        if flag:
+            raise ExpiredOTPError("The OTP code is expired")
         
-        return otp_obj
+    
+    @staticmethod
+    def get_all_valid_user_OTPs(user: CustomUser) -> QuerySet[PasswordResetOTP]:
+
+        current_time = timezone.now()
+        
+        not_expired_otps = PasswordResetOTP.objects.filter(expires_at__gt= current_time, user= user)
+        not_expired_otps_ids = not_expired_otps.values_list('id', flat=True)
+        
+        blacklisted_otps = BlacklistedPasswordResetOTP.objects.filter(OTP__in= list(not_expired_otps_ids) )
+        blacklisted_otps_ids = blacklisted_otps.values_list('id', flat=True)
+        
+        valid_otps = not_expired_otps.exclude(OTP__in= list(blacklisted_otps_ids)).order_by("-created_at")
+        
+        return valid_otps
+    
+    
+    @staticmethod
+    def get_all_user_OTPs(user: CustomUser) -> QuerySet[PasswordResetOTP]:
+
+        return PasswordResetOTP.objects.filter(user= user)
 
 
         
