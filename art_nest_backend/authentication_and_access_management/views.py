@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from users.models import CustomUser
-from .serializers import ForgotPasswordEmailSerializer
+from .serializers import ForgotPasswordEmailSerializer, ValidatePasswordResetEmailOTPSerializer, serializers
 from .tasks import send_forgot_password_email_task
 from .otp_handler import PasswordResetOTPManager
+from .exeptions import MaxFailedAttemptsOTPError
 
 # Create your views here.
 
@@ -16,7 +17,7 @@ class SendForgotPasswordEmailView(APIView):
 
         serializer = ForgotPasswordEmailSerializer(data= request.data)
         
-        if not serializer.is_valid():
+        if not serializer.is_valid():              
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
@@ -34,4 +35,51 @@ class SendForgotPasswordEmailView(APIView):
 
         return Response({'message': 'forgot password email has been send'}, status=status.HTTP_200_OK)
     
+
+
+class ValidateForgotPasswordEmailOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    
+    def post(self, request):        
+
+        serializer = ValidatePasswordResetEmailOTPSerializer(data= request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+
+        except serializers.ValidationError as e:
+            error_code = e.detail['code'][0]
+
+            if('invalid_otp' != error_code):
+                raise e
+            
+            self.handle_invalid_otp(serializer= serializer)
+
+            raise e
+                
+
+        return Response({'message': 'OTP validation sucessfull'}, status= status.HTTP_200_OK)
+    
+    
+    def handle_invalid_otp(self, serializer):
+
+        email = serializer.data.get('email')
+
+        # here we dont nedd to handle the ObjectDoesNotExist exection because
+        # the serializer should had alredy check that a user whit this email exist
+        user = CustomUser.objects.get(email= email)
+        
+        otp_objs = PasswordResetOTPManager.get_all_valid_user_OTPs(user= user)
+        try:
+            PasswordResetOTPManager.record_failed_attempt(otp_instance= otp_objs[0])
+
+        except MaxFailedAttemptsOTPError as e:
+            raise serializers.ValidationError({'message': str(e),
+                                               'code': 'invalid_otp'
+                                               })
+        except IndexError as e:
+            raise serializers.ValidationError({'message': f'No valid OTPs found for this user',
+                                               'code': 'invalid_otp'
+                                               })
 
