@@ -15,4 +15,5 @@ urlpatterns = [
     path('api/token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/blacklist', TokenBlacklistView.as_view(), name='token_blacklist'),
     path('forgot-password/send/email', views.SendForgotPasswordEmailView.as_view(), name='send_forgot_password_email'),
+    path('forgot-password/validate/email/otp', views.ValidateForgotPasswordEmailOTPView.as_view(), name='validates_that_the_email_otp_is_valid'),
 ]
