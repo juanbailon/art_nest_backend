@@ -99,6 +99,7 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "FORGOT_PASSWORD_ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
@@ -258,7 +259,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 
 # Password reset email OTP settings
-PASSWORD_RESET_EMAIL_OTP_LIFETIME = timedelta(minutes=30)
+PASSWORD_RESET_EMAIL_OTP_LIFETIME = timedelta(minutes=30) # the lifetime of the OTP code send in the email
 MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION = 4
 OTP_CODE_LENGTH = 6
 
