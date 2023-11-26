@@ -6,7 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from users.models import CustomUser
-from .serializers import ForgotPasswordEmailSerializer, ValidatePasswordResetEmailOTPSerializer, serializers
+from users.permissions import IsProfileOwnerPermission
+from .serializers import ForgotPasswordEmailSerializer, ValidatePasswordResetEmailOTPSerializer, SetNewPasswordSerializer
 from .tasks import send_forgot_password_email_task
 from .otp_handler import PasswordResetOTPManager
 from .exeptions import MaxFailedAttemptsOTPError
@@ -121,3 +122,20 @@ class ValidateForgotPasswordEmailOTPView(APIView):
         return access_token.__str__()
 
     
+
+class SetNewUserPasswordView(APIView):
+    """ this view updates the user password, this change can only be done through a PUT, NOT a PATCH """
+    
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request):
+        serializer = SetNewPasswordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        
+        new_password = serializer.validated_data['new_password']
+        user = request.user
+        print(user)
+        user.set_password(new_password)
+        user.save()
+
+        return Response("New password set successfully", status=status.HTTP_200_OK)
