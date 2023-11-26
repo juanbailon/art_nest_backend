@@ -1,4 +1,5 @@
 from django.core.mail import send_mail
+from django.conf import settings
 from celery import shared_task
 
 
@@ -9,7 +10,7 @@ def send_forgot_password_email_task(email_address, message):
     send_mail(
         "Your Feedback",
         f"\t{message}\n\nThank you!",
-        "support@example.com",
+        settings.EMAIL_HOST_USER,
         [email_address],
         fail_silently=False,
     )
