@@ -25,6 +25,6 @@ class FailedPasswordResetOTPAttempts(models.Model):
 
 class TemporaryBlockUser(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    block_at = models.DateTimeField(auto_now_add=True)
+    block_at = models.DateTimeField(blank=False, null=False)
     unblock_at = models.DateTimeField(blank=False, null=False)
     reason = models.TextField(blank=False, null=False)
