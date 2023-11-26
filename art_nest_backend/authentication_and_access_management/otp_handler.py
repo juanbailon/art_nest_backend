@@ -35,6 +35,23 @@ class OTPBlacklistManager:
          
         blacklist_otp_obj, created = BlacklistedPasswordResetOTP.objects.get_or_create(OTP= OTP)
         return blacklist_otp_obj
+    
+    
+    @staticmethod
+    def blacklist_all_valid_user_otps(user: CustomUser) -> QuerySet[PasswordResetOTP]:
+        """ 
+           Blacklists all valid OTPs associated with a given user.
+
+            Returns:
+            - QuerySet[PasswordResetOTP]: A queryset containing all the OTPs that were blacklisted
+        """
+        all_valid_user_otps = PasswordResetOTPManager.get_all_valid_user_OTPs(user= user)
+
+        if all_valid_user_otps.exists():
+            for otp in all_valid_user_otps:
+                PasswordResetOTPManager.blacklist(OTP= otp)
+
+        return all_valid_user_otps
 
 
 class FailedOTPAttemptsManager:
