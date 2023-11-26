@@ -61,13 +61,12 @@ class ValidateForgotPasswordEmailOTPView(APIView):
             raise e
                 
 
-        # blacklist the just inuted valid otp
-        # PasswordResetOTPManager.blacklist()
+        self.blacklist_the_valid_otp(serializer= serializer)
 
         return Response({'message': 'OTP validation sucessfull'}, status= status.HTTP_200_OK)
     
     
-    def handle_invalid_otp(self, serializer):
+    def handle_invalid_otp(self, serializer) -> None:
 
         email = serializer.data.get('email')
 
@@ -88,3 +87,15 @@ class ValidateForgotPasswordEmailOTPView(APIView):
                                                'code': 'invalid_otp'
                                                })
 
+
+    def blacklist_the_valid_otp(self, serializer) -> None:
+        email = serializer.data.get('email')
+        otp_code = serializer.data.get('OTP')
+        user = CustomUser.objects.get(email= email)
+
+        # here we know that get_OTP wont retunr None since the validations of
+        # the serializer have alredy been pass when this method is call
+        OTP = PasswordResetOTPManager.get_OTP(user= user, otp_code= otp_code) 
+        PasswordResetOTPManager.blacklist(OTP= OTP)
+
+    
