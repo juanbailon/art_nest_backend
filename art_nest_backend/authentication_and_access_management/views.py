@@ -1,7 +1,10 @@
 from django.shortcuts import render
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
 from users.models import CustomUser
 from .serializers import ForgotPasswordEmailSerializer, ValidatePasswordResetEmailOTPSerializer, serializers
 from .tasks import send_forgot_password_email_task
@@ -61,9 +64,18 @@ class ValidateForgotPasswordEmailOTPView(APIView):
             raise e
                 
 
-        self.blacklist_the_valid_otp(serializer= serializer)
+        email = serializer.data.get('email')
+        otp_code = serializer.data.get('OTP')
+        user = CustomUser.objects.get(email= email)
 
-        return Response({'message': 'OTP validation sucessfull'}, status= status.HTTP_200_OK)
+        self.blacklist_the_valid_otp(user= user, otp_code= otp_code)
+        access_token = self.generate_access_token(user= user)
+
+        return Response({'message': 'OTP validation sucessfull',
+                         'access': f'{access_token}'
+                         },
+                        status= status.HTTP_200_OK
+                        )
     
     
     def handle_invalid_otp(self, serializer) -> None:
@@ -88,14 +100,24 @@ class ValidateForgotPasswordEmailOTPView(APIView):
                                                })
 
 
-    def blacklist_the_valid_otp(self, serializer) -> None:
-        email = serializer.data.get('email')
-        otp_code = serializer.data.get('OTP')
-        user = CustomUser.objects.get(email= email)
-
+    def blacklist_the_valid_otp(self, user: CustomUser, otp_code: str) -> None:
         # here we know that get_OTP wont retunr None since the validations of
         # the serializer have alredy been pass when this method is call
         OTP = PasswordResetOTPManager.get_OTP(user= user, otp_code= otp_code) 
         PasswordResetOTPManager.blacklist(OTP= OTP)
+
+    
+    def generate_access_token(self, user: CustomUser) -> str:
+        access_token = AccessToken.for_user(user)
+
+        try:
+            lifetime = settings.SIMPLE_JWT['FORGOT_PASSWORD_ACCESS_TOKEN_LIFETIME']
+        except KeyError:
+            # Handle the case when the setting is not defined
+            raise ImproperlyConfigured("FORGOT_PASSWORD_ACCESS_TOKEN_LIFETIME is not defined in SIMPLE_JWT settings.")
+
+        access_token.set_exp(lifetime= lifetime)
+
+        return access_token.__str__()
 
     
