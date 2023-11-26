@@ -264,14 +264,19 @@ OTP_CODE_LENGTH = 6
 
 
 # Celery settings
-CELERY_BROKER_URL = "redis://localhost:6379"
-CELERY_RESULT_BACKEND = "redis://localhost:6379"
+CELERY_BROKER_URL = os.getenv('REDIS_SERVER_URL')
+# CELERY_RESULT_BACKEND = os.getenv('USE_REAL_SMTP_EMAIL_BACKEND')
 
 
 # SMTP Configuration
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-# EMAIL_HOST = 'smtp.office365.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'sigein_comp@outlook.com'
-# EMAIL_HOST_PASSWORD = 'sigein_email_password_123'
+USE_REAL_SMTP_EMAIL_BACKEND =  (os.getenv('USE_REAL_SMTP_EMAIL_BACKEND').lower() == 'true')
+
+if not USE_REAL_SMTP_EMAIL_BACKEND:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = 'smtp.office365.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
