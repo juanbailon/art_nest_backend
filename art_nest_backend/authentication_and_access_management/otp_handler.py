@@ -62,6 +62,7 @@ class FailedOTPAttemptsManager:
         Records a failed OTP attempt and raises an exception if the maximum
         allowed attempts are exceeded.
         """
+
         max_allowed_failed_attempts = settings.MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION
         
         failed_attempts_obj, created = FailedPasswordResetOTPAttempts.objects.get_or_create(
@@ -88,10 +89,44 @@ class FailedOTPAttemptsManager:
 
     @staticmethod
     def check_max_failed_attempts(otp_instance: PasswordResetOTP) -> None:
+        
+        failed_attempts_obj = FailedOTPAttemptsManager.get_failed_otp_attempt(otp_instance= otp_instance)
 
+        if failed_attempts_obj is None:
+            return None
+        
+        if failed_attempts_obj.failed_attempts >= settings.MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION:
+            raise MaxFailedAttemptsOTPError("Maximum number of failed OTP validation attempts exceeded")
+
+
+    @staticmethod
+    def get_failed_attempts_count(otp_instance: PasswordResetOTP) -> int:
+
+        failed_attempts_obj = FailedOTPAttemptsManager.get_failed_otp_attempt(otp_instance= otp_instance)
+
+        if failed_attempts_obj is None:
+            return 0
+        
+        return failed_attempts_obj.failed_attempts        
+
+
+    @staticmethod
+    def get_remaining_attempts(otp_instance: PasswordResetOTP) -> int:
+        """
+        Calculate the remaining attempts for the user to validate their OTP.
+        """
+        num_failed_attempts = FailedOTPAttemptsManager.get_failed_attempts_count(otp_instance= otp_instance)
+        
+        count = settings.MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION - num_failed_attempts
+
+        return count
+
+
+    @staticmethod
+    def get_failed_otp_attempt(otp_instance: PasswordResetOTP) -> FailedPasswordResetOTPAttempts | None:
         try:
             failed_attempts_obj= FailedPasswordResetOTPAttempts.objects.get(
-                OTP=otp_instance
+                OTP= otp_instance
             )
         except ObjectDoesNotExist:
             """
@@ -100,8 +135,7 @@ class FailedOTPAttemptsManager:
             """
             return None
         
-        if failed_attempts_obj.failed_attempts >= settings.MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION:
-            raise MaxFailedAttemptsOTPError("Maximum number of failed OTP validation attempts exceeded")
+        return failed_attempts_obj
          
             
 class PasswordResetOTPManager(OTPBlacklistManager, FailedOTPAttemptsManager):
