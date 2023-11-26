@@ -199,6 +199,16 @@ class PasswordResetOTPManager(OTPBlacklistManager, FailedOTPAttemptsManager):
     def get_all_user_OTPs(user: CustomUser) -> QuerySet[PasswordResetOTP]:
 
         return PasswordResetOTP.objects.filter(user= user)
+    
+
+    @staticmethod
+    def get_OTP(user: CustomUser, otp_code: str) -> PasswordResetOTP | None:
+
+        try:
+            return PasswordResetOTP.objects.get(user=user, OTP=otp_code)
+        
+        except ObjectDoesNotExist:
+            return None
 
 
         
