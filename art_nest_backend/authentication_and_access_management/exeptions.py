@@ -10,3 +10,7 @@ class MaxFailedAttemptsOTPError(PasswordResetOTPError):
 
 class ExpiredOTPError(PasswordResetOTPError):
     pass
+
+
+class TemporaryUserBlockError(Exception):
+    pass
