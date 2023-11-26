@@ -1,7 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from users.models import CustomUser
-from .models import PasswordResetOTP, BlacklistedPasswordResetOTP, FailedPasswordResetOTPAttempts
+from .models import PasswordResetOTP
 from .otp_handler import PasswordResetOTPManager
 from .exeptions import BlacklistedOTPError, MaxFailedAttemptsOTPError, ExpiredOTPError
 
@@ -68,3 +69,29 @@ class ValidatePasswordResetEmailOTPSerializer(serializers.Serializer):
         return data
         
 
+
+class SetNewPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(max_length=200, write_only=True)
+    confirm_new_password = serializers.CharField(max_length=200, write_only=True)
+
+    def validate(self, data):
+        """
+        Custom validation to ensure current_password matches the users DB password
+        and new_password is confirmed correctly.
+        """
+
+        new_password = data.get('new_password')
+        confirm_new_password = data.get('confirm_new_password')
+
+        # Check if new_password and confirm_new_password match
+        if new_password != confirm_new_password:
+            raise serializers.ValidationError("New passwords do not match.")        
+
+        user = self.context['request'].user
+        try:
+            validate_password(new_password, user)
+        except serializers.ValidationError as e:
+            raise serializers.ValidationError({'new_password': e.messages})
+
+
+        return data
