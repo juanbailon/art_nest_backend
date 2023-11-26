@@ -264,7 +264,13 @@ OTP_CODE_LENGTH = 6
 
 
 # Celery settings
-CELERY_BROKER_URL = os.getenv('REDIS_SERVER_URL')
+USE_REMOTE_REDIS_SERVER =  (os.getenv('USE_REMOTE_REDIS_SERVER').lower() == 'true')
+
+if USE_REMOTE_REDIS_SERVER:
+    CELERY_BROKER_URL = os.getenv('REDIS_REMOTE_SERVER_URL')
+else:
+    CELERY_BROKER_URL = "redis://localhost:6379"
+
 # CELERY_RESULT_BACKEND = os.getenv('USE_REAL_SMTP_EMAIL_BACKEND')
 
 
