@@ -11,6 +11,7 @@ from .serializers import ForgotPasswordEmailSerializer, ValidatePasswordResetEma
 from .tasks import send_forgot_password_email_task
 from .otp_handler import PasswordResetOTPManager
 from .exeptions import MaxFailedAttemptsOTPError
+from .models import PasswordResetOTP
 
 # Create your views here.
 
@@ -62,8 +63,6 @@ class ValidateForgotPasswordEmailOTPView(APIView):
             
             self.handle_invalid_otp(serializer= serializer)
 
-            raise e
-                
 
         email = serializer.data.get('email')
         otp_code = serializer.data.get('OTP')
@@ -89,7 +88,7 @@ class ValidateForgotPasswordEmailOTPView(APIView):
         
         otp_objs = PasswordResetOTPManager.get_all_valid_user_OTPs(user= user)
         try:
-            PasswordResetOTPManager.record_failed_attempt(otp_instance= otp_objs[0])
+            self.record_failed_validation_attempt(otp_instance= otp_objs[0])
 
         except MaxFailedAttemptsOTPError as e:
             raise serializers.ValidationError({'message': str(e),
@@ -100,6 +99,16 @@ class ValidateForgotPasswordEmailOTPView(APIView):
                                                'code': 'invalid_otp'
                                                })
 
+
+    def record_failed_validation_attempt(self, otp_instance: PasswordResetOTP) -> None:
+
+        PasswordResetOTPManager.record_failed_attempt(otp_instance= otp_instance)
+
+        remaining_attempts = PasswordResetOTPManager.get_remaining_attempts(otp_instance= otp_instance)
+
+        raise MaxFailedAttemptsOTPError(f"Invalid OTP code, you have {remaining_attempts} attempts left")
+                                            
+    
 
     def blacklist_the_valid_otp(self, user: CustomUser, otp_code: str) -> None:
         # here we know that get_OTP wont retunr None since the validations of
