@@ -25,6 +25,8 @@ class SendForgotPasswordEmailView(APIView):
         user = CustomUser.objects.get(email= email)
 
         otp_manager = PasswordResetOTPManager()
+        PasswordResetOTPManager.blacklist_all_valid_user_otps(user= user)
+
         password_reset_otp_obj = otp_manager.record_OTP(user= user)
 
         minutes = otp_manager.lifetime.total_seconds() / 60
@@ -58,6 +60,9 @@ class ValidateForgotPasswordEmailOTPView(APIView):
 
             raise e
                 
+
+        # blacklist the just inuted valid otp
+        # PasswordResetOTPManager.blacklist()
 
         return Response({'message': 'OTP validation sucessfull'}, status= status.HTTP_200_OK)
     
