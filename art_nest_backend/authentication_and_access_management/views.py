@@ -20,7 +20,7 @@ from .permissions import IsNotTemporarilyBlocked
 class SendForgotPasswordEmailView(APIView):
     permission_classes = [permissions.AllowAny, IsNotTemporarilyBlocked]
 
-    def post(self, request):        
+    def post(self, request):   
 
         serializer = UserEmailSerializer(data= request.data)
         
@@ -49,8 +49,7 @@ class SendForgotPasswordEmailView(APIView):
 class ValidateForgotPasswordEmailOTPView(APIView):
     permission_classes = [permissions.AllowAny, IsNotTemporarilyBlocked]
 
-    
-    def post(self, request):        
+    def post(self, request): 
 
         serializer = ValidatePasswordResetEmailOTPSerializer(data= request.data)
 
