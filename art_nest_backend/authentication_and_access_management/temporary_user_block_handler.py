@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from users.models import CustomUser
 from .models import TemporaryBlockUser
-from exeptions import TemporaryUserBlockError
+from .exeptions import TemporaryUserBlockError
 
 
 class BlockReason(Enum):
@@ -20,7 +20,7 @@ class TemporaryUserBlockManager:
         unblock_at = created_at + lifetime
         
         block_user_obj, created =  TemporaryBlockUser.objects.get_or_create(user= user,
-                                                                            unblock_at= created_at,
+                                                                            block_at= created_at,
                                                                             unblock_at = unblock_at,
                                                                             reason = reason
                                                                             )  
