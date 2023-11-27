@@ -8,7 +8,7 @@ from .exeptions import BlacklistedOTPError, MaxFailedAttemptsOTPError, ExpiredOT
 
 
 
-class ForgotPasswordEmailSerializer(serializers.Serializer):
+class UserEmailSerializer(serializers.Serializer):
 
     email = serializers.EmailField()
 

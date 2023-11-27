@@ -7,20 +7,22 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from users.models import CustomUser
 from users.permissions import IsProfileOwnerPermission
-from .serializers import ForgotPasswordEmailSerializer, ValidatePasswordResetEmailOTPSerializer, SetNewPasswordSerializer
+from .serializers import UserEmailSerializer, ValidatePasswordResetEmailOTPSerializer, SetNewPasswordSerializer
 from .tasks import send_forgot_password_email_task
 from .otp_handler import PasswordResetOTPManager
+from .temporary_user_block_handler import TemporaryUserBlockManager, BlockReason
 from .exeptions import MaxFailedAttemptsOTPError
-from .models import PasswordResetOTP
+from .models import PasswordResetOTP, TemporaryBlockUser
+from .permissions import IsNotTemporarilyBlocked
 
 # Create your views here.
 
 class SendForgotPasswordEmailView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny, IsNotTemporarilyBlocked]
 
     def post(self, request):        
 
-        serializer = ForgotPasswordEmailSerializer(data= request.data)
+        serializer = UserEmailSerializer(data= request.data)
         
         if not serializer.is_valid():              
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -45,7 +47,7 @@ class SendForgotPasswordEmailView(APIView):
 
 
 class ValidateForgotPasswordEmailOTPView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny, IsNotTemporarilyBlocked]
 
     
     def post(self, request):        
@@ -91,6 +93,9 @@ class ValidateForgotPasswordEmailOTPView(APIView):
             self.record_failed_validation_attempt(otp_instance= otp_objs[0])
 
         except MaxFailedAttemptsOTPError as e:
+
+            self.temporarily_block_user(max_failed_attempts_error= e, user= user)
+
             raise serializers.ValidationError({'message': str(e),
                                                'code': 'invalid_otp'
                                                })
@@ -129,13 +134,31 @@ class ValidateForgotPasswordEmailOTPView(APIView):
         access_token.set_exp(lifetime= lifetime)
 
         return access_token.__str__()
+    
+
+    def temporarily_block_user(self,
+                               user: CustomUser,
+                               max_failed_attempts_error: MaxFailedAttemptsOTPError
+                               ) -> TemporaryBlockUser | None:
+        
+        if 'blacklisted' not in str(max_failed_attempts_error):
+            return None
+        
+        obj = TemporaryUserBlockManager.block_user(user= user,
+                                             lifetime= settings.BLOCK_FORGOT_PASSWORD_VIEWS_LIFETIME,
+                                             reason= BlockReason.MAX_FAILED_OTP_ATTEMPTS_REACHED.value
+                                             )
+        
+        return obj
+        
+
 
     
 
 class SetNewUserPasswordView(APIView):
     """ this view updates the user password, this change can only be done through a PUT, NOT a PATCH """
     
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsNotTemporarilyBlocked]
 
     def put(self, request):
         serializer = SetNewPasswordSerializer(data=request.data, context={'request': request})
