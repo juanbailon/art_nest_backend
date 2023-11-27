@@ -52,3 +52,21 @@ class CustomUser(AbstractUser, PermissionsMixin):
         return f'user email: {self.email} \n username:{self.username}'
 
 
+
+class Avatar(models.Model):
+
+    avatar_image = models.ImageField(null=False, upload_to='avatars/')
+    avatar_name = models.CharField(null=True, max_length=50)
+
+
+class UserAvatar(models.Model):
+
+    user = models.OneToOneField(CustomUser, on_delete= models.CASCADE)
+    avatar = models.ForeignKey(Avatar, on_delete= models.CASCADE)
+
+
+class UserProfilePicture(models.Model):
+
+    profile_picture = models.ImageField(null=False, upload_to='profile_images/')
+    user = models.OneToOneField(CustomUser, on_delete=  models.CASCADE)
+
