@@ -2,6 +2,7 @@ from datetime import timedelta
 from enum import Enum
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import QuerySet
 from users.models import CustomUser
 from .models import TemporaryBlockUser
 from .exeptions import TemporaryUserBlockError
@@ -42,5 +43,12 @@ class TemporaryUserBlockManager:
         user_block_query = TemporaryBlockUser.objects.filter(user=user, unblock_at__gt= now)
 
         return user_block_query.exists()
-       
+    
+    @staticmethod
+    def get_all_valid_temporary_user_blocks(user: CustomUser) -> QuerySet[TemporaryBlockUser]:
+        
+        now = timezone.now() 
+        user_block_query = TemporaryBlockUser.objects.filter(user=user, unblock_at__gt= now).order_by("-unblock_at")
+
+        return user_block_query
 
