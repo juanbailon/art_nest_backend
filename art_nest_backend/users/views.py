@@ -8,8 +8,9 @@ from .serializers import (
     UpdateCustomUserSerializer,
     PasswordUpdateSerializer, 
     SearchUsernameSerializer,
+    AvatarSerializer
     )
-from .models import CustomUser
+from .models import CustomUser, Avatar
 from rest_framework_simplejwt.views import TokenRefreshView
 from .permissions import IsProfileOwnerPermission
 from .filters import UsernameFilter
@@ -82,3 +83,9 @@ class SearchUserByUsernameView(generics.ListAPIView):
     serializer_class = SearchUsernameSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_class = UsernameFilter
+
+
+class ListAllAvatarsView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = AvatarSerializer
+    queryset = Avatar.objects.all()
