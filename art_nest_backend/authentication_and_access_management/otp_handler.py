@@ -82,7 +82,7 @@ class FailedOTPAttemptsManager:
         if failed_attempts_obj.failed_attempts >= max_allowed_failed_attempts:
             
             OTPBlacklistManager.blacklist(otp_instance)
-            raise MaxFailedAttemptsOTPError("Max validation attempts exceeded. OTP was balcklisted ")
+            raise MaxFailedAttemptsOTPError("Max validation attempts exceeded. OTP was blacklisted ")
         
         return failed_attempts_obj
 
