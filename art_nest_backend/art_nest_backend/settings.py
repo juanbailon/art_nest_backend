@@ -259,9 +259,12 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 
 # Password reset email OTP settings
-PASSWORD_RESET_EMAIL_OTP_LIFETIME = timedelta(minutes=30) # the lifetime of the OTP code send in the email
+PASSWORD_RESET_EMAIL_OTP_LIFETIME = timedelta(minutes=15) # the lifetime of the OTP code send in the email
 MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION = 4
 OTP_CODE_LENGTH = 6
+
+#temporary block user settings
+BLOCK_FORGOT_PASSWORD_VIEWS_LIFETIME = timedelta(minutes=30)
 
 
 # Celery settings
