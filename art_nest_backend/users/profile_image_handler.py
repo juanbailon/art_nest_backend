@@ -4,6 +4,17 @@ from .models import UserAvatar, Avatar, ProfilePicture, CustomUser
 from .exeptions import DefaultAvatarNotFoundError
 
 
+class AvatarManager:
+
+    @staticmethod
+    def get_avatar_by_id(id: int) -> Avatar | None:
+        try:
+            avatar = Avatar.objects.get(id= id)
+        except ObjectDoesNotExist:
+            return None
+        
+        return avatar
+
 class UserAvatarManager:
     
     @staticmethod
@@ -101,10 +112,10 @@ class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
     def set_user_profile_image(cls, user: CustomUser, image_data: Avatar | ImageFieldFile) -> UserAvatar | ProfilePicture:
 
         if type(image_data) == Avatar:
-            return cls._set_user_avatar(user= user, avatar= image_data)
+            return cls._set_user_avatar(self=cls, user= user, avatar= image_data)
         
         if type(image_data) == ImageFieldFile:
-            return cls._set_user_profile_picture(user= user, picture= image_data)
+            return cls._set_user_profile_picture(self=cls, user= user, picture= image_data)
         
         raise ValueError(f"Unsupported image_data type {type(image_data)}. Expected Avatar or ImageFieldFile.")
 
