@@ -5,6 +5,7 @@ from rest_framework import generics, permissions, status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.views import TokenBlacklistView
 from users.models import CustomUser
 from users.permissions import IsProfileOwnerPermission
 from .serializers import UserEmailSerializer, ValidatePasswordResetEmailOTPSerializer, SetNewPasswordSerializer
@@ -16,6 +17,18 @@ from .models import PasswordResetOTP, TemporaryBlockUser
 from .permissions import IsNotTemporarilyBlocked
 
 # Create your views here.
+
+class CustomTokenBlacklistView(TokenBlacklistView):
+
+    def post(self, request, *args, **kwargs) -> Response:
+        parent_response = super().post(request= request)
+
+        if parent_response.status_code == 200:
+            parent_response.data = {'message': 'Refresh token has been blacklisted successfully'}
+            print(parent_response.data)
+
+        return parent_response
+
 
 class SendForgotPasswordEmailView(APIView):
     permission_classes = [permissions.AllowAny, IsNotTemporarilyBlocked]
