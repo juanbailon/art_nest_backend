@@ -97,7 +97,7 @@ class UserAvartarView(APIView):
     
     def post(self, request, pk):
         user = request.user
-        avatar_id = request.data['avatar']
+        avatar_id = request.data.get('avatar')
 
         serializer = UserAvatarSerializer(data= {'user': user.id,
                                                  'avatar': avatar_id
@@ -118,7 +118,7 @@ class UserAvartarView(APIView):
 
     def put(self, request, pk):
         user = request.user
-        avatar_id = request.data['avatar']
+        avatar_id = request.data.get('avatar')
 
         avatar = UserProfileImageManager.get_user_avatar(user= user)
 
@@ -130,3 +130,15 @@ class UserAvartarView(APIView):
         serializer.save()
 
         return Response({'message': 'user avatar updated successfully'}, status=status.HTTP_200_OK)
+    
+
+
+    # class ProfilePictureView(APIView):
+    #     permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
+
+    #     def post(self, request, pk):
+    #         user = request.user
+    #         profile_pic_image = request.data['picture']
+
+
+
