@@ -50,15 +50,28 @@ class ProfilePictureManager:
     
     @staticmethod
     def set_user_profile_picture(user: CustomUser, picture: ImageFieldFile) -> ProfilePicture:
-        ...
+
+        profile_picture_obj, created =  ProfilePicture.objects.update_or_create(user= user, profile_picture= picture)
+        return profile_picture_obj
     
     @staticmethod
-    def get_user_profile_picture(user: CustomUser) -> ProfilePicture:
-        ...
+    def get_user_profile_picture(user: CustomUser) -> ProfilePicture | None:
+        try:
+            profile_picture_obj = ProfilePicture.objects.get(user= user)
+        except ObjectDoesNotExist:
+            return None
+
+        return profile_picture_obj
     
+
     @staticmethod
     def user_has_profile_picture(user: CustomUser) -> bool:
-        ...
+        try:
+            ProfilePicture.objects.get(user= user)
+        except ObjectDoesNotExist:
+            return False
+        
+        return True
 
 
 
