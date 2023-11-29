@@ -169,4 +169,4 @@ class SetNewUserPasswordView(APIView):
         user.set_password(new_password)
         user.save()
 
-        return Response("New password set successfully", status=status.HTTP_200_OK)
+        return Response({"message": "New password set successfully"}, status=status.HTTP_200_OK)
