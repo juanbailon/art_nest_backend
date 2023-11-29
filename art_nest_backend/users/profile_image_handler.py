@@ -43,6 +43,16 @@ class UserAvatarManager:
             return False
         
         return True
+    
+
+    @staticmethod
+    def delete_user_avatar(user: CustomUser, avatar: Avatar) -> None:
+        user_avatar =  UserAvatarManager.get_user_avatar(user= user)
+
+        if user_avatar is None:
+            raise ValueError(f"User {user.username} does not have an avatar")
+
+        user_avatar.delete()
 
 
 
@@ -72,8 +82,35 @@ class ProfilePictureManager:
             return False
         
         return True
+    
+
+    @staticmethod
+    def delete_user_profile_picture(user: CustomUser) -> None:
+        profile_pic_obj = ProfilePictureManager.get_user_profile_picture(user= user)
+
+        if profile_pic_obj is None:
+            raise ValueError(f"User {user.username} does not have an ProfilePicture")
+        
+        profile_pic_obj.delete()
 
 
 
 class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
+    
+    # @staticmethod
+    # def set_user_profile_image(user: CustomUser, image_data: Avatar | ImageFieldFile) -> UserAvatar | ProfilePicture:
+
+    #     if type(image_data) == Avatar:
+    #         return UserProfileImageManager.set_user_avatar(user= user, avatar= image_data)
+        
+
+    #     ...
+
+    # def _set_user_avatar(self, user: CustomUser, avatar: Avatar) -> UserAvatar:
+        
+    #     has_profile_pic_obj = self.user_has_profile_picture(user= user)
+        
+    #     if has_profile_pic_obj:
+    #         pass
+
     pass
