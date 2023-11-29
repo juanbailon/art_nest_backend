@@ -55,8 +55,8 @@ class CustomUser(AbstractUser, PermissionsMixin):
 
 class Avatar(models.Model):
 
-    avatar_image = models.ImageField(null=False, upload_to='avatars/')
-    avatar_name = models.CharField(null=True, max_length=50)
+    image = models.ImageField(null=False, upload_to='avatars/')
+    name = models.CharField(null=True, max_length=50)
 
 
 class UserAvatar(models.Model):
