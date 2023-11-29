@@ -9,7 +9,7 @@ class UserAvatarManager:
     @staticmethod
     def set_user_avatar(user: CustomUser, avatar: Avatar) -> UserAvatar:
          
-        user_avatar_obj, created = UserAvatar.objects.get_or_create(user= user, avatar= avatar)
+        user_avatar_obj, created = UserAvatar.objects.update_or_create(user= user, avatar= avatar)
         return user_avatar_obj
     
     @staticmethod
