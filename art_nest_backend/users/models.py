@@ -65,7 +65,7 @@ class UserAvatar(models.Model):
     avatar = models.ForeignKey(Avatar, on_delete= models.CASCADE)
 
 
-class UserProfilePicture(models.Model):
+class ProfilePicture(models.Model):
 
     profile_picture = models.ImageField(null=False, upload_to='profile_images/')
     user = models.OneToOneField(CustomUser, on_delete=  models.CASCADE)
