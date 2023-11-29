@@ -130,3 +130,39 @@ class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
 
         return profile_pic_obj
     
+
+    @staticmethod
+    def delete_user_profile_image(user: CustomUser) -> None:
+        """
+        Delete the user's profile image, either an avatar or a profile picture.
+        """
+        has_user_avatar = UserAvatarManager.user_has_avatar(user= user)
+        has_profile_pic = ProfilePictureManager.user_has_profile_picture(user= user)
+
+        if has_user_avatar:
+            UserAvatarManager.delete_user_avatar(user= user)
+        elif has_profile_pic:
+            ProfilePictureManager.delete_user_profile_picture(user= user)
+
+
+    @staticmethod
+    def get_user_profile_image(user: CustomUser) -> Avatar | ProfilePicture | None:
+        """
+        Get the user's profile image, either an avatar or a profile picture.
+        """
+        user_avatar = UserAvatarManager.get_user_avatar(user= user)
+        if user_avatar is not None:
+            return user_avatar
+
+        profile_picture = ProfilePictureManager.get_user_profile_picture(user= user)
+        if profile_picture is not None:
+            return profile_picture
+        
+        
+    @staticmethod
+    def user_has_profile_image(user: CustomUser) -> bool:
+        has_user_avatar = UserAvatarManager.user_has_avatar(user= user)
+        has_profile_pic = ProfilePictureManager.user_has_profile_picture(user= user)
+
+        return has_user_avatar or has_profile_pic
+
