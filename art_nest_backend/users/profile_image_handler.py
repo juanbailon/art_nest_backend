@@ -28,7 +28,7 @@ class ProfilePictureManager:
         ...
     
     @staticmethod
-    def get_user_profile_picture(user: CustomUser) -> UserAvatar:
+    def get_user_profile_picture(user: CustomUser) -> ProfilePicture:
         ...
     
     @staticmethod
