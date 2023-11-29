@@ -46,7 +46,7 @@ class UserAvatarManager:
     
 
     @staticmethod
-    def delete_user_avatar(user: CustomUser, avatar: Avatar) -> None:
+    def delete_user_avatar(user: CustomUser) -> None:
         user_avatar =  UserAvatarManager.get_user_avatar(user= user)
 
         if user_avatar is None:
@@ -107,10 +107,19 @@ class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
     #     ...
 
     # def _set_user_avatar(self, user: CustomUser, avatar: Avatar) -> UserAvatar:
+    #     has_profile_pic = self.user_has_profile_picture(user= user)
         
-    #     has_profile_pic_obj = self.user_has_profile_picture(user= user)
-        
-    #     if has_profile_pic_obj:
-    #         pass
+    #     if has_profile_pic:
+    #         self.delete_user_profile_picture(user= user)
 
+    #     user_avatar_obj = self.set_user_avatar(user= user, avatar= avatar)
+
+    #     return user_avatar_obj
+
+    
+    # def _set_user_profile_picture(self, user: CustomUser, picture: ImageFieldFile) -> ProfilePicture:
+    #     has_user_avatar =  self.user_has_avatar(user= user)
+
+    #     if has_user_avatar:
+    #         self.delete_user_avatar(user= user)
     pass
