@@ -11,6 +11,7 @@ urlpatterns = [
     path('<int:pk>/change-password', views.UpdateUserPasswordView.as_view(), name='change_user_password'),
     path('search', views.SearchUserByUsernameView.as_view(), name='search_users_by_their_usernames'),
     path('avatar/list/all', views.ListAllAvatarsView.as_view(), name='lists_all_the_available_avatars'),
+    path('avatar/assign', views.CreateUserAvartarView.as_view(), name='assings_an_avatar_to_the_user'),
 
 ]
 
