@@ -114,4 +114,16 @@ class UserAvatarSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'read_only': True},
              }
+        
+
+class ProfilePictureSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProfilePicture
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'user': {'read_only': True},
+             }
+
                 
