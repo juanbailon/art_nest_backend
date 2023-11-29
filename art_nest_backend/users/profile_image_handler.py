@@ -97,29 +97,36 @@ class ProfilePictureManager:
 
 class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
     
-    # @staticmethod
-    # def set_user_profile_image(user: CustomUser, image_data: Avatar | ImageFieldFile) -> UserAvatar | ProfilePicture:
+    @classmethod
+    def set_user_profile_image(cls, user: CustomUser, image_data: Avatar | ImageFieldFile) -> UserAvatar | ProfilePicture:
 
-    #     if type(image_data) == Avatar:
-    #         return UserProfileImageManager.set_user_avatar(user= user, avatar= image_data)
+        if type(image_data) == Avatar:
+            return cls._set_user_avatar(user= user, avatar= image_data)
         
-
-    #     ...
-
-    # def _set_user_avatar(self, user: CustomUser, avatar: Avatar) -> UserAvatar:
-    #     has_profile_pic = self.user_has_profile_picture(user= user)
+        if type(image_data) == ImageFieldFile:
+            return cls._set_user_profile_picture(user= user, picture= image_data)
         
-    #     if has_profile_pic:
-    #         self.delete_user_profile_picture(user= user)
+        raise ValueError(f"Unsupported image_data type {type(image_data)}. Expected Avatar or ImageFieldFile.")
 
-    #     user_avatar_obj = self.set_user_avatar(user= user, avatar= avatar)
 
-    #     return user_avatar_obj
+    def _set_user_avatar(self, user: CustomUser, avatar: Avatar) -> UserAvatar:
+        has_profile_pic = self.user_has_profile_picture(user= user)
+        
+        if has_profile_pic:
+            self.delete_user_profile_picture(user= user)
+
+        user_avatar_obj = self.set_user_avatar(user= user, avatar= avatar)
+
+        return user_avatar_obj
 
     
-    # def _set_user_profile_picture(self, user: CustomUser, picture: ImageFieldFile) -> ProfilePicture:
-    #     has_user_avatar =  self.user_has_avatar(user= user)
+    def _set_user_profile_picture(self, user: CustomUser, picture: ImageFieldFile) -> ProfilePicture:
+        has_user_avatar =  self.user_has_avatar(user= user)
 
-    #     if has_user_avatar:
-    #         self.delete_user_avatar(user= user)
-    pass
+        if has_user_avatar:
+            self.delete_user_avatar(user= user)
+
+        profile_pic_obj = self.set_user_profile_picture(user= user, picture= picture)
+
+        return profile_pic_obj
+    
