@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, serializers
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -14,6 +14,7 @@ from .serializers import (
 from .models import CustomUser, Avatar
 from .permissions import IsProfileOwnerPermission
 from .filters import UsernameFilter
+from .profile_image_handler import UserProfileImageManager, AvatarManager
 
 
 # Create your views here.
@@ -91,6 +92,41 @@ class ListAllAvatarsView(generics.ListAPIView):
     queryset = Avatar.objects.all()
 
 
-class CreateUserAvartarView(generics):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserAvatarSerializer
+class UserAvartarView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
+    
+    def post(self, request, pk):
+        user = request.user
+        avatar_id = request.data['avatar']
+
+        serializer = UserAvatarSerializer(data= {'user': user.id,
+                                                 'avatar': avatar_id
+                                                }
+                                                )
+        
+        serializer.is_valid(raise_exception= True)
+
+        avatar = AvatarManager.get_avatar_by_id(id= avatar_id)
+
+        try:
+            UserProfileImageManager.set_user_profile_image(user= user, image_data= avatar)
+        except ValueError as e:
+            raise serializers.ValidationError({'message': 'could not find any Avatar with the given values'})
+        
+        return Response({'message': 'Avatar set successfully as the user profile image'}, status= status.HTTP_200_OK)
+
+
+    def put(self, request, pk):
+        user = request.user
+        avatar_id = request.data['avatar']
+
+        avatar = UserProfileImageManager.get_user_avatar(user= user)
+
+        if avatar is None:
+            raise serializers.ValidationError({'message': 'The user does not have an avatar'})
+
+        serializer = UserAvatarSerializer(instance= avatar, data= {'avatar': avatar_id}, partial=True)
+        serializer.is_valid(raise_exception= True)
+        serializer.save()
+
+        return Response({'message': 'user avatar updated successfully'}, status=status.HTTP_200_OK)
