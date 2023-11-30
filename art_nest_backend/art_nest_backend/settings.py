@@ -294,3 +294,43 @@ else:
     EMAIL_USE_TLS = True
     EMAIL_HOST_USER = os.getenv('EMAIL_USER')
     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
+
+
+
+available_storages = {
+    "production": {
+                        "default": {
+                            "BACKEND": "storages.backends.s3.S3Storage",
+                            "OPTIONS": {
+                                "region_name": os.getenv('AWS_S3_REGION_NAME'),
+                                "bucket_name": os.getenv('AWS_STORAGE_BUCKET_NAME'),
+                                "access_key": os.getenv('AWS_ACCESS_KEY_ID'),
+                                "secret_key": os.getenv('AWS_SECRET_ACCESS_KEY'),
+                                "custom_domain": os.getenv('AWS_S3_CUSTOM_DOMAIN'),
+                                "cloudfront_key": os.getenv('AWS_CLOUDFRONT_KEY'),
+                                "cloudfront_key_id": os.getenv('AWS_CLOUDFRONT_KEY_ID'),
+                            }
+                        },
+                        "staticfiles": {
+                            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                        },
+                    },
+
+    "local_development": {
+                            "default": {
+                                "BACKEND": "django.core.files.storage.FileSystemStorage",
+                            },
+                            "staticfiles": {
+                                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                            },
+                    }                        
+}
+
+STORAGES = {}
+
+USE_AWS_S3_STORAGE = os.getenv('USE_AWS_S3_STORAGE').lower() == 'true'
+
+if USE_AWS_S3_STORAGE:
+    STORAGES = available_storages['production']
+else:
+    STORAGES = available_storages['local_development']
