@@ -309,6 +309,7 @@ available_storages = {
                                 "custom_domain": os.getenv('AWS_S3_CUSTOM_DOMAIN'),
                                 "cloudfront_key": os.getenv('AWS_CLOUDFRONT_KEY'),
                                 "cloudfront_key_id": os.getenv('AWS_CLOUDFRONT_KEY_ID'),
+                                "file_overwrite": False,
                             }
                         },
                         "staticfiles": {
