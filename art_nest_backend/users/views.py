@@ -215,6 +215,7 @@ class ProfilePictureView(APIView):
             return Response({"message": "You dont have any profile image to be deleted"}, status= status.HTTP_200_OK)
 
         UserProfileImageManager.delete_user_profile_image(user= user)
+        UserProfileImageManager.set_user_avatar_to_default(user= user)
 
         return Response({"message": "Profile image deleted successfully"}, status= status.HTTP_200_OK)
     
