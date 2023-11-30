@@ -27,7 +27,7 @@ class CreateCustomUserView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
 
-class RetriveAndUpdateCustomUserView(generics.RetrieveUpdateAPIView):
+class RetriveUpdateAndDeleteCustomUserView(generics.RetrieveUpdateDestroyAPIView):
     """ 
     This view lets the users consult and update his own data, in the updates the user 
     can NOT change the password, since this is consider a critical task and therefor is
@@ -42,6 +42,8 @@ class RetriveAndUpdateCustomUserView(generics.RetrieveUpdateAPIView):
             return CustomUserSerializer
         elif self.request.method in ('PUT', 'PATCH'):
             return UpdateCustomUserSerializer
+        else:
+            return CustomUserSerializer
 
 
 class UpdateUserPasswordView(generics.UpdateAPIView):
@@ -199,4 +201,4 @@ class ProfilePictureView(APIView):
         
         return Response({'image': full_image_url}, status= status.HTTP_200_OK)
 
-        
+
