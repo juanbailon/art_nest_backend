@@ -37,7 +37,7 @@ class UserAvatarManager:
     @staticmethod
     def has_default_avatar(user: CustomUser) -> bool:
         try:
-            avatar =  Avatar.objects.get(avatar_name= 'default')
+            avatar =  Avatar.objects.get(name= 'default')
             UserAvatar.objects.get(user= user, avatar= avatar)
 
         except Avatar.DoesNotExist:
