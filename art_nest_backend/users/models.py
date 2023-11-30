@@ -70,3 +70,9 @@ class ProfilePicture(models.Model):
     profile_picture = models.ImageField(null=False, upload_to='profile_images/')
     user = models.OneToOneField(CustomUser, on_delete=  models.CASCADE)
 
+
+class UserProfile(models.Model):
+    
+    name = models.CharField(max_length=50, null=True, blank=True)
+    presentation = models.TextField(max_length=300, null=True, blank=True)
+    user = models.OneToOneField(CustomUser, on_delete= models.CASCADE)
