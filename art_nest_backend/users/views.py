@@ -66,7 +66,7 @@ class UpdateUserPasswordView(generics.UpdateAPIView):
         user.set_password(new_password)
         user.save()
 
-        return Response("Password updated successfully", status=status.HTTP_200_OK)
+        return Response({"message": "Password updated successfully"}, status=status.HTTP_200_OK)
     
 
 class SearchUserByUsernameView(generics.ListAPIView):
