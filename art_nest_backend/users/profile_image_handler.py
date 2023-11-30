@@ -1,4 +1,3 @@
-from typing import BinaryIO
 from django.db.models.fields.files import ImageFieldFile
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -90,10 +89,19 @@ class UserAvatarManager:
 class ProfilePictureManager:
     
     @staticmethod
-    def set_user_profile_picture(user: CustomUser, picture: BinaryIO) -> ProfilePicture:
+    def set_user_profile_picture(user: CustomUser, picture: InMemoryUploadedFile) -> ProfilePicture:
+        
+        profile_picture_obj = ProfilePictureManager.get_user_profile_picture(user= user)
 
-        profile_picture_obj, created =  ProfilePicture.objects.update_or_create(user= user, profile_picture= picture)
-        return profile_picture_obj
+        if profile_picture_obj is None:            
+            return ProfilePicture.objects.create(user= user, profile_picture= picture)
+        
+        else:
+            profile_picture_obj.profile_picture.delete()
+            profile_picture_obj.profile_picture.save(picture.name, picture)
+            
+            return profile_picture_obj
+            
     
     @staticmethod
     def get_user_profile_picture(user: CustomUser) -> ProfilePicture | None:
@@ -130,7 +138,7 @@ class ProfilePictureManager:
 class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
     
     @classmethod
-    def set_user_profile_image(cls, user: CustomUser, image_data: Avatar | BinaryIO) -> UserAvatar | ProfilePicture:
+    def set_user_profile_image(cls, user: CustomUser, image_data: Avatar | InMemoryUploadedFile) -> UserAvatar | ProfilePicture:
 
         if type(image_data) == Avatar:
             return cls._set_user_avatar(self=cls, user= user, avatar= image_data)
@@ -149,7 +157,7 @@ class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
         return user_avatar_obj
 
     
-    def _set_user_profile_picture(self, user: CustomUser, picture: BinaryIO) -> ProfilePicture:
+    def _set_user_profile_picture(self, user: CustomUser, picture: InMemoryUploadedFile) -> ProfilePicture:
         has_user_avatar =  self.user_has_avatar(user= user)
 
         if has_user_avatar:
