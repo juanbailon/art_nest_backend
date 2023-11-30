@@ -151,7 +151,8 @@ class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
 
         if has_user_avatar:
             UserAvatarManager.delete_user_avatar(user= user)
-        elif has_profile_pic:
+        
+        if has_profile_pic:
             ProfilePictureManager.delete_user_profile_picture(user= user)
 
 
