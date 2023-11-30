@@ -13,6 +13,7 @@ urlpatterns = [
     path('avatars', views.ListAllAvatarsView.as_view(), name='lists_all_the_available_avatars'),
     path('<int:pk>/avatar', views.UserAvartarView.as_view(), name='assings_an_avatar_to_the_user'),
     path('<int:pk>/profile/picture', views.ProfilePictureView.as_view(), name='assings_a_profile_picture_to_the_user'),
+    path('get-id', views.GetCustomUserID.as_view(), name='get_the_related_id_to_the_user'),
 
 ]
 

@@ -200,5 +200,15 @@ class ProfilePictureView(APIView):
         full_image_url = request.build_absolute_uri(img_field.url)
         
         return Response({'image': full_image_url}, status= status.HTTP_200_OK)
+    
+
+class GetCustomUserID(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        id = user.id
+
+        return Response({'user_id': id}, status= status.HTTP_200_OK)
 
 
