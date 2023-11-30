@@ -16,6 +16,7 @@ from .serializers import (
 from .models import CustomUser, Avatar, ProfilePicture
 from .permissions import IsProfileOwnerPermission
 from .filters import UsernameFilter
+from .exeptions import DefaultAvatarNotFoundError
 from .profile_image_handler import UserProfileImageManager, AvatarManager
 
 
@@ -200,6 +201,22 @@ class ProfilePictureView(APIView):
         full_image_url = request.build_absolute_uri(img_field.url)
         
         return Response({'image': full_image_url}, status= status.HTTP_200_OK)
+    
+
+    def delete(self, request, pk):
+        user = request.user
+
+        try:
+            has_no_profile_img = UserProfileImageManager.has_default_avatar(user= user)
+        except DefaultAvatarNotFoundError:
+            return Response({'message': 'Please contact our client support'}, status= status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if has_no_profile_img:
+            return Response({"message": "You dont have any profile image to be deleted"}, status= status.HTTP_200_OK)
+
+        UserProfileImageManager.delete_user_profile_image(user= user)
+
+        return Response({"message": "Profile image deleted successfully"}, status= status.HTTP_200_OK)
     
 
 class GetCustomUserID(APIView):
