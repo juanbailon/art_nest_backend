@@ -1,5 +1,7 @@
+from typing import BinaryIO
 from django.db.models.fields.files import ImageFieldFile
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from .models import UserAvatar, Avatar, ProfilePicture, CustomUser
 from .exeptions import DefaultAvatarNotFoundError
 
@@ -70,7 +72,7 @@ class UserAvatarManager:
 class ProfilePictureManager:
     
     @staticmethod
-    def set_user_profile_picture(user: CustomUser, picture: ImageFieldFile) -> ProfilePicture:
+    def set_user_profile_picture(user: CustomUser, picture: BinaryIO) -> ProfilePicture:
 
         profile_picture_obj, created =  ProfilePicture.objects.update_or_create(user= user, profile_picture= picture)
         return profile_picture_obj
@@ -109,15 +111,12 @@ class ProfilePictureManager:
 class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
     
     @classmethod
-    def set_user_profile_image(cls, user: CustomUser, image_data: Avatar | ImageFieldFile) -> UserAvatar | ProfilePicture:
+    def set_user_profile_image(cls, user: CustomUser, image_data: Avatar | BinaryIO) -> UserAvatar | ProfilePicture:
 
         if type(image_data) == Avatar:
             return cls._set_user_avatar(self=cls, user= user, avatar= image_data)
-        
-        if type(image_data) == ImageFieldFile:
-            return cls._set_user_profile_picture(self=cls, user= user, picture= image_data)
-        
-        raise ValueError(f"Unsupported image_data type {type(image_data)}. Expected Avatar or ImageFieldFile.")
+
+        return cls._set_user_profile_picture(self=cls, user= user, picture= image_data)
 
 
     def _set_user_avatar(self, user: CustomUser, avatar: Avatar) -> UserAvatar:
@@ -131,12 +130,12 @@ class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
         return user_avatar_obj
 
     
-    def _set_user_profile_picture(self, user: CustomUser, picture: ImageFieldFile) -> ProfilePicture:
+    def _set_user_profile_picture(self, user: CustomUser, picture: BinaryIO) -> ProfilePicture:
         has_user_avatar =  self.user_has_avatar(user= user)
 
         if has_user_avatar:
             self.delete_user_avatar(user= user)
-
+        
         profile_pic_obj = self.set_user_profile_picture(user= user, picture= picture)
 
         return profile_pic_obj
@@ -163,7 +162,7 @@ class UserProfileImageManager(UserAvatarManager, ProfilePictureManager):
         """
         user_avatar = UserAvatarManager.get_user_avatar(user= user)
         if user_avatar is not None:
-            return user_avatar
+            return user_avatar.avatar
 
         profile_picture = ProfilePictureManager.get_user_profile_picture(user= user)
         if profile_picture is not None:
