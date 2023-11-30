@@ -57,6 +57,24 @@ class UserAvatarManager:
         
         return True
     
+    @staticmethod
+    def get_dafault_avatar() -> UserAvatar:
+        try:
+            avatar =  Avatar.objects.get(name= 'default')            
+        except Avatar.DoesNotExist:
+            raise DefaultAvatarNotFoundError("There is not Avatar object set as the dafault avatar")
+        
+        return avatar
+    
+
+    @staticmethod
+    def set_user_avatar_to_default(user: CustomUser) -> UserAvatar:
+
+        default_avatar = UserAvatarManager.get_dafault_avatar(user= user)
+        user_avartar_obj = UserAvatarManager.set_user_avatar(user= user, avatar= default_avatar)
+
+        return user_avartar_obj
+
 
     @staticmethod
     def delete_user_avatar(user: CustomUser) -> None:
