@@ -120,10 +120,16 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProfilePicture
-        fields = '__all__'
+        fields = ['id',
+                  'user',
+                  'profile_picture',
+                  ]
         extra_kwargs = {
-            'id': {'read_only': True},
-            'user': {'read_only': True},
+            'id': {'read_only': True},            
              }
+        
+
+class ImageSerializer(serializers.Serializer):
+    image = serializers.ImageField()      
 
                 
