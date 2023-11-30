@@ -175,8 +175,8 @@ class ProfilePictureView(APIView):
                                             )
         
         serializer.is_valid(raise_exception= True)
-        serializer.save()
-        
+        UserProfileImageManager.set_user_profile_image(user= user, image_data= profile_pic_image)   
+             
         return Response({'message': 'user profile picture updated successfully'}, status=status.HTTP_200_OK)
     
 
