@@ -9,9 +9,11 @@ from .serializers import (
     PasswordUpdateSerializer, 
     SearchUsernameSerializer,
     AvatarSerializer,
-    UserAvatarSerializer
+    UserAvatarSerializer,
+    ProfilePictureSerializer,
+    ImageSerializer
     )
-from .models import CustomUser, Avatar
+from .models import CustomUser, Avatar, ProfilePicture
 from .permissions import IsProfileOwnerPermission
 from .filters import UsernameFilter
 from .profile_image_handler import UserProfileImageManager, AvatarManager
@@ -133,12 +135,68 @@ class UserAvartarView(APIView):
     
 
 
-    # class ProfilePictureView(APIView):
-    #     permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
+class ProfilePictureView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
 
-    #     def post(self, request, pk):
-    #         user = request.user
-    #         profile_pic_image = request.data['picture']
+    def post(self, request, pk):
+        user = request.user
+        profile_pic_image = request.data.get('picture')
+
+        serializer = ProfilePictureSerializer(data= {'user': user.id,
+                                                    'profile_picture': profile_pic_image
+                                                    }
+                                                    )
+        
+        serializer.is_valid(raise_exception= True)
+
+        try:
+            UserProfileImageManager.set_user_profile_image(user= user, image_data= profile_pic_image)
+        except ValueError as e:
+            raise serializers.ValidationError({'message': 'The picture provided is the wrong format'})
+        
+        return Response({'message': 'Profile picture created successfully'}, status= status.HTTP_201_CREATED)
 
 
+    def put(self, request, pk):
+        user = request.user
+        profile_pic_image = request.data.get('picture')
 
+        profile_picture_obj = UserProfileImageManager.get_user_profile_picture(user= user)
+
+        if profile_picture_obj is None:
+            raise serializers.ValidationError({'message': 'The user does not have a profile picture'})
+
+        serializer = ProfilePictureSerializer(instance= profile_picture_obj,
+                                              data= {'profile_picture': profile_pic_image},
+                                              partial= True
+                                            )
+        
+        serializer.is_valid(raise_exception= True)
+        serializer.save()
+        
+        return Response({'message': 'user profile picture updated successfully'}, status=status.HTTP_200_OK)
+    
+
+    def get(self, request, pk):
+        user = request.user
+
+        profile_img_object = UserProfileImageManager.get_user_profile_image(user= user)
+
+
+        if isinstance(profile_img_object, Avatar):
+            img_field = profile_img_object.image
+
+        elif isinstance(profile_img_object, ProfilePicture):
+            img_field = profile_img_object.profile_picture
+
+        else:
+            return Response({'message': 'The user does not have any Avatar of picture set as his profile image'})
+        
+
+        serializer = ImageSerializer(data= {'image': img_field},)
+        serializer.is_valid(raise_exception= True)
+        full_image_url = request.build_absolute_uri(img_field.url)
+        
+        return Response({'image': full_image_url}, status= status.HTTP_200_OK)
+
+        
