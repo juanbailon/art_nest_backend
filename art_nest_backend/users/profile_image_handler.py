@@ -104,6 +104,7 @@ class ProfilePictureManager:
         if profile_pic_obj is None:
             raise ValueError(f"User {user.username} does not have an ProfilePicture")
         
+        profile_pic_obj.profile_picture.delete()
         profile_pic_obj.delete()
 
 
