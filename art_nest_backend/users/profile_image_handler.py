@@ -70,7 +70,7 @@ class UserAvatarManager:
     @staticmethod
     def set_user_avatar_to_default(user: CustomUser) -> UserAvatar:
 
-        default_avatar = UserAvatarManager.get_dafault_avatar(user= user)
+        default_avatar = UserAvatarManager.get_dafault_avatar()
         user_avartar_obj = UserAvatarManager.set_user_avatar(user= user, avatar= default_avatar)
 
         return user_avartar_obj
