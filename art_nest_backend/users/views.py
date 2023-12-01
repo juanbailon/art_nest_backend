@@ -187,13 +187,15 @@ class ProfilePictureView(APIView):
         user = request.user
 
         profile_img_object = UserProfileImageManager.get_user_profile_image(user= user)
-
+        profile_img_type = ""
 
         if isinstance(profile_img_object, Avatar):
             img_field = profile_img_object.image
+            profile_img_type = 'avatar'
 
         elif isinstance(profile_img_object, ProfilePicture):
             img_field = profile_img_object.profile_picture
+            profile_img_type = 'custom_picture'
 
         else:
             return Response({'message': 'The user does not have any Avatar of picture set as his profile image'})
@@ -203,7 +205,7 @@ class ProfilePictureView(APIView):
         serializer.is_valid(raise_exception= True)
         full_image_url = request.build_absolute_uri(img_field.url)
         
-        return Response({'image': full_image_url}, status= status.HTTP_200_OK)
+        return Response({'image': full_image_url, 'type': profile_img_type}, status= status.HTTP_200_OK)
     
 
     def delete(self, request, username):
@@ -260,5 +262,5 @@ class RetriveAndUpdateUserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         lookup_value = self.kwargs[self.lookup_field]
-        
+
         return get_object_or_404(self.queryset, user__username=lookup_value)
