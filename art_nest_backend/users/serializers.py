@@ -27,6 +27,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
         try:
             person = CustomUser.objects.create_user(password=password, **validated_data)
             UserProfileImageManager.set_user_avatar_to_default(user= person)
+            
+            presentation = "Hi! Welcome to the nest of this artist"
+            UserProfile.objects.create(user= person, name= person.username, presentation= presentation)
+
         except ValidationError as e:
             raise serializers.ValidationError({'password': e.messages})
 
