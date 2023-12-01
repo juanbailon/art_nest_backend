@@ -32,7 +32,9 @@ class RetriveUpdateAndDeleteCustomUserView(generics.RetrieveUpdateDestroyAPIView
     """ 
     This view lets the users consult and update his own data, in the updates the user 
     can NOT change the password, since this is consider a critical task and therefor is
-    assing to an especific endpoint
+    assing to an especific endpoint.
+
+    Also lets the user delete it self from the database
     """
     queryset = CustomUser.objects.all()
     permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
