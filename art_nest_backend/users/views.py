@@ -11,9 +11,10 @@ from .serializers import (
     AvatarSerializer,
     UserAvatarSerializer,
     ProfilePictureSerializer,
-    ImageSerializer
+    ImageSerializer,
+    UserProfileSerializer
     )
-from .models import CustomUser, Avatar, ProfilePicture
+from .models import CustomUser, Avatar, ProfilePicture, UserProfile
 from .permissions import IsProfileOwnerPermission
 from .filters import UsernameFilter
 from .exeptions import DefaultAvatarNotFoundError
@@ -239,5 +240,19 @@ class GetCustomUserUsername(APIView):
         username = request.user.username        
 
         return Response({'username': username}, status= status.HTTP_200_OK)
+    
+
+class RetriveAndUpdateUserProfileView(generics.RetrieveUpdateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'username'
 
 
+    def get_permissions(self):
+        # Use different permissions for PUT and PATCH request
+        if self.request.method in ('PUT', 'PATCH'):
+            return [permissions.IsAuthenticated(), IsProfileOwnerPermission()]
+
+        # Default permissions for other methods (e.g., GET)
+        return super().get_permissions()
