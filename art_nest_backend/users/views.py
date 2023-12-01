@@ -228,5 +228,14 @@ class GetCustomUserID(APIView):
         id = user.id
 
         return Response({'user_id': id}, status= status.HTTP_200_OK)
+    
+
+class GetCustomUserUsername(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        username = request.user.username        
+
+        return Response({'username': username}, status= status.HTTP_200_OK)
 
 
