@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import CustomUser, Avatar, UserAvatar, ProfilePicture, UserProfile
+from .profile_image_handler import UserProfileImageManager
 
 
 class CustomUserSerializer(serializers.ModelSerializer):    
@@ -25,6 +26,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         try:
             person = CustomUser.objects.create_user(password=password, **validated_data)
+            UserProfileImageManager.set_user_avatar_to_default(user= person)
         except ValidationError as e:
             raise serializers.ValidationError({'password': e.messages})
 
