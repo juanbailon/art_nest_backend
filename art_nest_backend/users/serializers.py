@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from .models import CustomUser, Avatar, UserAvatar, ProfilePicture
+from .models import CustomUser, Avatar, UserAvatar, ProfilePicture, UserProfile
 
 
 class CustomUserSerializer(serializers.ModelSerializer):    
@@ -89,8 +89,13 @@ class SearchUsernameSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-                  'username'
-                 ]
+                  'username',
+                  'id'
+                 ]  
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'username': {'read_only': True},        
+             }
         
 
 class AvatarSerializer(serializers.ModelSerializer):
@@ -132,4 +137,17 @@ class ProfilePictureSerializer(serializers.ModelSerializer):
 class ImageSerializer(serializers.Serializer):
     image = serializers.ImageField()      
 
-                
+
+class UserProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserProfile
+        fields = ['id',
+                  'name',
+                  'presentation',
+                  'user'
+                  ]
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'user': {'read_only': True},        
+             }
