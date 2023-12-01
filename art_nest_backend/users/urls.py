@@ -15,6 +15,7 @@ urlpatterns = [
     path('<str:username>/profile/picture', views.ProfilePictureView.as_view(), name='assings_a_profile_picture_to_the_user'),
     path('get-id', views.GetCustomUserID.as_view(), name='get_the_related_id_to_the_user'),
     path('get-username', views.GetCustomUserUsername.as_view(), name='get_the_related_username_to_the_user'),
+    path('<str:username>/profile', views.RetriveAndUpdateUserProfileView.as_view(), name='get_or_update_the_user_profile'),
 
 ]
 
