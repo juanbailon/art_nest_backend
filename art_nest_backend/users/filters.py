@@ -9,7 +9,7 @@ class UsernameFilter(filters.FilterSet):
     - `username`: Case-insensitive partial match filter for usernames.
     """
     
-    username = filters.CharFilter(field_name='username', lookup_expr='icontains')
+    username = filters.CharFilter(field_name='username', lookup_expr='startswith')
 
     class Meta:
         model = CustomUser
