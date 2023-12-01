@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.views import APIView
 from rest_framework.request import Request
@@ -256,3 +256,9 @@ class RetriveAndUpdateUserProfileView(generics.RetrieveUpdateAPIView):
 
         # Default permissions for other methods (e.g., GET)
         return super().get_permissions()
+
+
+    def get_object(self):
+        lookup_value = self.kwargs[self.lookup_field]
+        
+        return get_object_or_404(self.queryset, user__username=lookup_value)
