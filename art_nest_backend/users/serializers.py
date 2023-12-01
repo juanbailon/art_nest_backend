@@ -145,15 +145,20 @@ class ImageSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
         fields = ['id',
                   'name',
                   'presentation',
-                  'user'
+                  'username'
                   ]
         extra_kwargs = {
             'id': {'read_only': True},
-            'user': {'read_only': True},        
+            # 'username': {'read_only': True},        
              }
+        
+    
+    def get_username(self, obj):
+        return obj.user.username
