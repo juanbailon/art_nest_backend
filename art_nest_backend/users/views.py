@@ -36,7 +36,7 @@ class RetriveUpdateAndDeleteCustomUserView(generics.RetrieveUpdateDestroyAPIView
     """
     queryset = CustomUser.objects.all()
     permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
-    lookup_field = 'pk'
+    lookup_field = 'username'
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -53,7 +53,7 @@ class UpdateUserPasswordView(generics.UpdateAPIView):
     serializer_class =  PasswordUpdateSerializer
     permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
     queryset = CustomUser.objects.all()
-    lookup_field = 'pk'
+    lookup_field = 'username'
 
     http_method_names = ['put'] # thsi makes only the PUT available and the PATCH inavailabe
 
@@ -100,7 +100,7 @@ class ListAllAvatarsView(generics.ListAPIView):
 class UserAvartarView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
     
-    def post(self, request, pk):
+    def post(self, request, username):
         user = request.user
         avatar_id = request.data.get('avatar')
 
@@ -121,7 +121,7 @@ class UserAvartarView(APIView):
         return Response({'message': 'Avatar set successfully as the user profile image'}, status= status.HTTP_200_OK)
 
 
-    def put(self, request, pk):
+    def put(self, request, username):
         user = request.user
         avatar_id = request.data.get('avatar')
 
@@ -141,7 +141,7 @@ class UserAvartarView(APIView):
 class ProfilePictureView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsProfileOwnerPermission]
 
-    def post(self, request, pk):
+    def post(self, request, username):
         user = request.user
         profile_pic_image = request.data.get('picture')
 
@@ -160,7 +160,7 @@ class ProfilePictureView(APIView):
         return Response({'message': 'Profile picture created successfully'}, status= status.HTTP_201_CREATED)
 
 
-    def put(self, request, pk):
+    def put(self, request, username):
         user = request.user
         profile_pic_image = request.data.get('picture')
 
@@ -180,7 +180,7 @@ class ProfilePictureView(APIView):
         return Response({'message': 'user profile picture updated successfully'}, status=status.HTTP_200_OK)
     
 
-    def get(self, request, pk):
+    def get(self, request, username):
         user = request.user
 
         profile_img_object = UserProfileImageManager.get_user_profile_image(user= user)
@@ -203,7 +203,7 @@ class ProfilePictureView(APIView):
         return Response({'image': full_image_url}, status= status.HTTP_200_OK)
     
 
-    def delete(self, request, pk):
+    def delete(self, request, username):
         user = request.user
 
         try:
