@@ -4,5 +4,5 @@ from users.models import CustomUser
 
 class UserPost(models.Model):
     post_image = models.ImageField(null=False, upload_to='users_posts/')
-    user = models.OneToOneField(CustomUser, on_delete=  models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=  models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
