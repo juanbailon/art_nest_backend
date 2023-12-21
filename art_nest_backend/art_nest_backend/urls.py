@@ -24,6 +24,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('follow/', include('followers.urls')),
     path('auth/', include('authentication_and_access_management.urls')),
+    path('users/', include('users_posts.urls')),
 ]
 
 if settings.DEBUG: 
