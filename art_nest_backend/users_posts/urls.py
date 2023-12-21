@@ -6,6 +6,6 @@ app_name='users_posts'
 
 
 urlpatterns = [    
-    # path('<str:name>/hi', views.GreetNameView.as_view(), name='greet'),
+    path('<str:username>/post', views.CreateUserPostView.as_view(), name='greet'),
 
 ]
