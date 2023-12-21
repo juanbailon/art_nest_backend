@@ -90,19 +90,37 @@ class PasswordUpdateSerializer(serializers.Serializer):
         return data
     
 
-class SearchUsernameSerializer(serializers.ModelSerializer):    
+class SearchUsernameSerializer(serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
+    presentation = serializers.CharField(source='userprofile.presentation', read_only=True)
     
     class Meta:
         model = CustomUser
         fields = [
+                  'id',
                   'username',
-                  'id'
+                  'profile_image',
+                  'presentation'
                  ]  
         extra_kwargs = {
             'id': {'read_only': True},
             'username': {'read_only': True},        
              }
         
+    
+    def get_profile_image(self, obj: CustomUser):
+
+        profile_image_obj = UserProfileImageManager.get_user_profile_image(user= obj)
+        
+        if isinstance(profile_image_obj, ProfilePicture):
+            return profile_image_obj.profile_picture.url
+        elif isinstance(profile_image_obj, Avatar):
+            return profile_image_obj.image.url
+        else:
+            return ""
+
+
+
 
 class AvatarSerializer(serializers.ModelSerializer):
 
