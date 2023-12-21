@@ -1,18 +1,21 @@
 from django.urls import path
 from . import views
 
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
 
 app_name='users'
 
 
 urlpatterns = [    
-    path('api/token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
     path('create', views.CreateCustomUserView.as_view(), name='create_a_new_CustomUser'),
-]
+    path('<str:username>/', views.RetriveUpdateAndDeleteCustomUserView.as_view(), name='retrive_and_update_user_own_info'),
+    path('<str:username>/change-password', views.UpdateUserPasswordView.as_view(), name='change_user_password'),
+    path('search', views.SearchUserByUsernameView.as_view(), name='search_users_by_their_usernames'),
+    path('avatars', views.ListAllAvatarsView.as_view(), name='lists_all_the_available_avatars'),
+    path('<str:username>/avatar', views.UserAvartarView.as_view(), name='assings_an_avatar_to_the_user'),
+    path('<str:username>/profile/picture', views.ProfilePictureView.as_view(), name='assings_a_profile_picture_to_the_user'),
+    path('get-id', views.GetCustomUserID.as_view(), name='get_the_related_id_to_the_user'),
+    path('get-username', views.GetCustomUserUsername.as_view(), name='get_the_related_username_to_the_user'),
+    path('<str:username>/profile', views.RetriveAndUpdateUserProfileView.as_view(), name='get_or_update_the_user_profile'),
 
+]
 

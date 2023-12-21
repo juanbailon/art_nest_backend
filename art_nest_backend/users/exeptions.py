@@ -1,0 +1,2 @@
+class DefaultAvatarNotFoundError(Exception):
+    pass

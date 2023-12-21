@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = (os.getenv('DEBUG').lower() == 'true')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if DEBUG:
@@ -51,9 +51,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'django_filters',
 
     'users',
+    'authentication_and_access_management',
+    'followers',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +87,11 @@ REST_FRAMEWORK = {
 
         'django_filters.rest_framework.DjangoFilterBackend',
     ), 
+
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
 }
 
 
@@ -91,9 +99,10 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
-    "UPDATE_LAST_LOGIN": False,
+    "FORGOT_PASSWORD_ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
 
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY if DEBUG else os.getenv('SIMPLE_JWT_SINGNING_KEY'),
@@ -163,6 +172,9 @@ available_databases = {
                 'PASSWORD': os.getenv('LOCAL_DB_PASSWORD'),
                 'HOST': os.getenv('LOCAL_DB_HOST', 'localhost'),
                 'PORT': os.getenv('LOCAL_DB_PORT', '5432'),
+                'TEST': {
+                    'ENGINE': 'django.db.backends.sqlite3',
+                },
             },
 
     'production': {
@@ -189,16 +201,31 @@ else:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {
+            "min_length": 9,
+        },
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+    {
+        "NAME": "art_nest_backend.custom_password_validators.MinimumAmountOfNumericDigitsValidator",
+        "OPTIONS": {
+            "min_amount_num_digits": 1,
+        },
+    },
+    {
+        "NAME": "art_nest_backend.custom_password_validators.MinimumAmountOfSpecialCharactersValidator",
+        "OPTIONS": {
+            "min_amount": 1,
+        },
     },
 ]
 
@@ -220,6 +247,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+MEDIA_URL='/media/'
+MEDIA_ROOT = BASE_DIR /'media'
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -229,3 +260,78 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+
+# Password reset email OTP settings
+PASSWORD_RESET_EMAIL_OTP_LIFETIME = timedelta(minutes=15) # the lifetime of the OTP code send in the email
+MAX_ALLOWED_ATTEMPS_FOR_OTP_VALIDATION = 4
+OTP_CODE_LENGTH = 6
+
+#temporary block user settings
+BLOCK_FORGOT_PASSWORD_VIEWS_LIFETIME = timedelta(minutes=30)
+
+
+# Celery settings
+USE_REMOTE_REDIS_SERVER =  (os.getenv('USE_REMOTE_REDIS_SERVER').lower() == 'true')
+
+if USE_REMOTE_REDIS_SERVER:
+    CELERY_BROKER_URL = os.getenv('REDIS_REMOTE_SERVER_URL')
+else:
+    CELERY_BROKER_URL = "redis://localhost:6379"
+
+# CELERY_RESULT_BACKEND = os.getenv('USE_REAL_SMTP_EMAIL_BACKEND')
+
+
+# SMTP Configuration
+USE_REAL_SMTP_EMAIL_BACKEND =  (os.getenv('USE_REAL_SMTP_EMAIL_BACKEND').lower() == 'true')
+
+if not USE_REAL_SMTP_EMAIL_BACKEND:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = 'smtp.office365.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
+
+
+
+available_storages = {
+    "production": {
+                        "default": {
+                            "BACKEND": "storages.backends.s3.S3Storage",
+                            "OPTIONS": {
+                                "region_name": os.getenv('AWS_S3_REGION_NAME'),
+                                "bucket_name": os.getenv('AWS_STORAGE_BUCKET_NAME'),
+                                "access_key": os.getenv('AWS_ACCESS_KEY_ID'),
+                                "secret_key": os.getenv('AWS_SECRET_ACCESS_KEY'),
+                                "custom_domain": os.getenv('AWS_S3_CUSTOM_DOMAIN'),
+                                "cloudfront_key": os.getenv('AWS_CLOUDFRONT_KEY'),
+                                "cloudfront_key_id": os.getenv('AWS_CLOUDFRONT_KEY_ID'),
+                                "file_overwrite": False,
+                            }
+                        },
+                        "staticfiles": {
+                            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                        },
+                    },
+
+    "local_development": {
+                            "default": {
+                                "BACKEND": "django.core.files.storage.FileSystemStorage",
+                            },
+                            "staticfiles": {
+                                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                            },
+                    }                        
+}
+
+STORAGES = {}
+
+USE_AWS_S3_STORAGE = os.getenv('USE_AWS_S3_STORAGE').lower() == 'true'
+
+if USE_AWS_S3_STORAGE:
+    STORAGES = available_storages['production']
+else:
+    STORAGES = available_storages['local_development']

@@ -1,15 +1,19 @@
 from django.core import validators
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password, **extra_fields):
         # Create and save a new user with the given email and password
+        validate_password(password)
+        
         user = self.model(username= username, email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
-        user.save(using=self._db)   
+        user.save()   
         
         return user
 
@@ -48,3 +52,27 @@ class CustomUser(AbstractUser, PermissionsMixin):
         return f'user email: {self.email} \n username:{self.username}'
 
 
+
+class Avatar(models.Model):
+
+    image = models.ImageField(null=False, upload_to='avatars/')
+    name = models.CharField(null=True, max_length=50)
+
+
+class UserAvatar(models.Model):
+
+    user = models.OneToOneField(CustomUser, on_delete= models.CASCADE)
+    avatar = models.ForeignKey(Avatar, on_delete= models.CASCADE)
+
+
+class ProfilePicture(models.Model):
+
+    profile_picture = models.ImageField(null=False, upload_to='profile_images/')
+    user = models.OneToOneField(CustomUser, on_delete=  models.CASCADE)
+
+
+class UserProfile(models.Model):
+    
+    name = models.CharField(max_length=50, null=True, blank=True)
+    presentation = models.TextField(max_length=300, null=True, blank=True)
+    user = models.OneToOneField(CustomUser, on_delete= models.CASCADE)
