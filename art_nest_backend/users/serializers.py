@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from users_posts.models import UserPost
 from .models import CustomUser, Avatar, UserAvatar, ProfilePicture, UserProfile
 from .profile_image_handler import UserProfileImageManager
 
@@ -164,13 +165,15 @@ class ImageSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
+    user_posts_images = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
         fields = ['id',
                   'name',
                   'presentation',
-                  'username'
+                  'username',
+                  'user_posts_images'
                   ]
         extra_kwargs = {
             'id': {'read_only': True},
@@ -180,3 +183,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     def get_username(self, obj):
         return obj.user.username
+    
+    def get_user_posts_images(self, obj):
+        posts = UserPost.objects.filter(user= obj.user).order_by('-created_at')
+        posts_images_urls = [p.post_image.url for p in posts]
+        return posts_images_urls
