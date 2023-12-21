@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'users',
     'authentication_and_access_management',
     'followers',
+    'users_posts',
 ]
 
 MIDDLEWARE = [
@@ -191,10 +192,12 @@ available_databases = {
 
 DATABASES = {}
 
-if DEBUG:
-    DATABASES["default"] = available_databases["local_development"]
-else:
+USE_PRODUCTION_DATABASE =  (os.getenv('USE_PRODUCTION_DATABASE').lower() == 'true')
+
+if USE_PRODUCTION_DATABASE:
     DATABASES["default"] = available_databases["production"]
+else:
+    DATABASES["default"] = available_databases["local_development"]
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
