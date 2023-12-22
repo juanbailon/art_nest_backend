@@ -124,8 +124,8 @@ class SearchUsernameSerializer(serializers.ModelSerializer):
         
         
     def get_is_following(self, obj: CustomUser):
-        request_user_id = self.context['request'].user.id
-        return obj.followed_users.filter(followed= request_user_id).exists()
+        request_user = self.context['request'].user
+        return request_user.followed_users.filter(followed= obj.id).exists()
 
 
 
