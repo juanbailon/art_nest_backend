@@ -94,6 +94,7 @@ class PasswordUpdateSerializer(serializers.Serializer):
 class SearchUsernameSerializer(serializers.ModelSerializer):
     profile_image = serializers.SerializerMethodField()
     presentation = serializers.CharField(source='userprofile.presentation', read_only=True)
+    is_following = serializers.SerializerMethodField()
     
     class Meta:
         model = CustomUser
@@ -101,7 +102,8 @@ class SearchUsernameSerializer(serializers.ModelSerializer):
                   'id',
                   'username',
                   'profile_image',
-                  'presentation'
+                  'presentation',
+                  'is_following',
                  ]  
         extra_kwargs = {
             'id': {'read_only': True},
@@ -119,6 +121,11 @@ class SearchUsernameSerializer(serializers.ModelSerializer):
             return profile_image_obj.image.url
         else:
             return ""
+        
+        
+    def get_is_following(self, obj: CustomUser):
+        request_user_id = self.context['request'].user.id
+        return obj.followed_users.filter(followed= request_user_id).exists()
 
 
 
